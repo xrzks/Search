@@ -136,8 +136,10 @@ final class Bench {
     /// keychain — its data protection half, where only apps signed as Search
     /// with its profile can read or write, under the app's own access group —
     /// and without the mark the setting is put back to off at launch, with a
-    /// word about it. Test runs keep the setting alone: their worlds hold
-    /// nothing of yours, and scripts set them up with a defaults write.
+    /// word about it. A copy without the profile can't leave one, so outside
+    /// test runs it is off at every launch. Test runs never read the mark:
+    /// their worlds hold nothing of yours, and scripts set them up with a
+    /// defaults write.
     @MainActor
     enum Consent {
         private static let mark = SwitchMark(service: "com.officecommun.search.bench")

@@ -562,14 +562,15 @@ struct SwitchMark {
          kSecAttrAccount as String: Store.world.map { "consent (\($0))" } ?? "consent"]
     }
 
-    /// The mark is there — or there is nowhere to keep one: a copy built
-    /// without Search's provisioning profile has no access group, and
-    /// keeps the switch as it always was.
+    /// The mark is there. A copy built without Search's provisioning
+    /// profile has no access group to keep one in, so it never has one,
+    /// and its switch is put back to off at launch. Test runs don't ask
+    /// (see Prefs.init).
     var given: Bool {
         var asked = query
         asked[kSecReturnAttributes as String] = true
         let status = SecItemCopyMatching(asked as CFDictionary, nil)
-        return status == errSecSuccess || status == errSecMissingEntitlement
+        return status == errSecSuccess
     }
 
     func grant() {
