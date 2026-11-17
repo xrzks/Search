@@ -270,24 +270,20 @@ pages, open tabs picked from the list, private tabs and a rule naming the space
 on screen stay where they are. `SpaceRoutes.swift` (`typedSpace`, `openTyped`),
 `Browser.swift` (`submit`), `Tests/space_links.py`
 
-**Rosé Pine colours** (2026-11-17). Settings › Appearance › Colours: Search's
-own greys, or [Rosé Pine](https://rosepinetheme.com)'s, Dawn while the window is
-light and Moon while it is dark, so Light, Dark and Auto keep their meaning.
-Only what Search draws: the strip, the column, the panels, its own pages,
-reading mode (links in iris), the spaces' colours, the accent SwiftUI tints
-with, the autofill flash and, with Chrome's colors on, the Web Inspector. Pages
-keep their own colours (Dusk is untouched), and what macOS draws, menus, alerts,
-open and save panels, keeps the Mac's light or dark. Every `Palette` colour asks
-`Theme` first and falls back to its grey. The ground is Rosé Pine's surface and
-the frame around the card its base, so the card stands off what it sits on as
-with Search's greys; muted text is subtle, muted being too faint on Dawn. A
-change of colours takes the app to the other appearance and back in one turn,
-with the pages held where they are, since a colour is only asked again when the
-appearance changes. `Theme.swift` (new), `Design.swift`, `Prefs.swift`,
-`Settings.swift`, `SettingsIndex.swift`, `Reader.swift`, `Inspector.swift`,
-`Browser.swift`, `Spaces.swift`, `Peek.swift`, `MeCard.swift`, `Windows.swift`,
-`Bench.swift` (`colours` in `ui` and `probe`),
-`Tests/SearchTests/FollowFileTests.swift`
+**0x26f colours** (2026-11-17). Search's greys are replaced by 0x26f's
+(`~/.config/0x26f/0x26f.css`): [Rosé Pine](https://rosepinetheme.com) on 0x96f's
+neutrals, its light variant while the window is light and its dark one while it
+is dark, so Light, Dark and Auto keep their meaning. No setting: these are
+Search's only colours. Only what Search draws: the strip, the column, the
+panels, its own pages, reading mode (links in purple), the spaces' colours, the
+accent SwiftUI tints with, the autofill flash and, with Chrome's colors on, the
+Web Inspector. Pages keep their own colours (Dusk is untouched), and what macOS
+draws, menus, alerts, open and save panels, keeps the Mac's light or dark. The
+ground is 0x26f's base, its background, as in a terminal, and the frame around
+the card its surface, as its panels are; muted text is subtle, muted being too
+faint on the light variant. `Theme.swift` (new), `Design.swift`,
+`Reader.swift`, `Inspector.swift`, `Spaces.swift`, `Peek.swift`,
+`MeCard.swift`, `Settings.swift` (`LookPicture`), `Windows.swift`
 
 **Disabled extensions left out of update checks** (2026-11-17). At each
 store check, once a day (sooner after one that failed), Google was sent the id

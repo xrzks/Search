@@ -340,7 +340,7 @@ struct PeekSkeleton: View {
     /// The light: a step above the shapes' grey toward the ground in light,
     /// and away from it in dark, so it reads as a sheen in both.
     static let light = NSColor(name: nil) { appearance in
-        NSColor(white: appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? 0.225 : 0.975, alpha: 1)
+        Theme.variant(for: appearance).sheen
     }
 
     @State private var shown = false

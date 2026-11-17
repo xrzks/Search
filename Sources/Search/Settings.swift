@@ -1770,9 +1770,10 @@ private struct LookPicture: View {
     private struct Window: View {
         let dark: Bool
         var body: some View {
-            let ground = Color(white: dark ? 0.11 : 1)
-            let wash = Color(white: dark ? 0.17 : 0.93)
-            let ink = Color(white: dark ? 0.93 : 0.09)
+            let hues = Theme.variant(dark: dark)
+            let ground = Color(nsColor: hues.ground)
+            let wash = Color(nsColor: hues.wash)
+            let ink = Color(nsColor: hues.ink)
             HStack(spacing: 4) {
                 VStack(alignment: .leading, spacing: 3) {
                     Capsule().fill(ink.opacity(0.55)).frame(width: 14, height: 3.5)

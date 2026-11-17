@@ -18,7 +18,21 @@ enum Reader {
     private static let dark = "color-scheme:dark;--r-ground:#1c1c1c;--r-ink:#e0e0e0;--r-quiet:#8a8a8a;"
         + "--r-aside:#a8a8a8;--r-rule:#333;--r-code:#2a2a2a;--r-picture:brightness(.92)"
 
-    static let sheet = [
+    /// The sheet, in 0x26f's colours (see Theme.swift): its light variant
+    /// for the light look, its dark one for the dark.
+    static let sheet: String = {
+        func look(_ hues: X26f) -> String {
+            "--r-ground:\(X26f.css(hues.ground));--r-ink:\(X26f.css(hues.ink));--r-quiet:\(X26f.css(hues.muted));"
+                + "--r-aside:\(X26f.css(hues.subtle));--r-rule:\(X26f.css(hues.highlightMed));"
+                + "--r-code:\(X26f.css(hues.overlay));--r-link:\(X26f.css(hues.purple))"
+        }
+        let dark = look(.dark)
+        return plain + ":root{" + look(.light) + "}"
+            + "@media (prefers-color-scheme:dark){:root:not([data-office-look=light]){" + dark + "}}"
+            + ":root[data-office-look=dark]{" + dark + "}"
+    }()
+
+    private static let plain = [
         // Light, or dark as the window is or as chosen in the corner
         // (ReaderLook puts it on <html>, which the reader keeps). The dark
         // ground is the window's own (Palette.ground); the text a shade
@@ -52,7 +66,7 @@ enum Reader {
         "color:var(--r-aside);margin:0 0 1.6em}",
         "#office-reader .office-above ul{padding-left:1.2em}",
         "#office-reader .office-above h2{margin:.4em 0}",
-        "#office-reader a{color:var(--r-ink);text-underline-offset:3px}",
+        "#office-reader a{color:var(--r-link,var(--r-ink));text-underline-offset:3px}",
         "#office-reader h2,#office-reader h3{font:600 20px/1.3 -apple-system,sans-serif;",
         "margin:2em 0 .6em}",
         "#office-reader h4,#office-reader h5,#office-reader h6{font:600 16px/1.4 -apple-system,sans-serif;",

@@ -183,7 +183,7 @@ extension Browser {
     /// One stylesheet, light or dark with the page. Appended once and
     /// replaced in place: the page's own rules follow the variables.
     private static let paintScript: String = {
-        let css = skin
+        let css = (skin + x26f)
             .replacingOccurrences(of: "\\", with: "\\\\")
             .replacingOccurrences(of: "`", with: "\\`")
             .replacingOccurrences(of: "${", with: "\\${")
@@ -201,6 +201,45 @@ extension Browser {
         })()
         """
     }()
+
+    /// 0x26f over Chrome's colors (see Theme.swift): the same names, the light variant while the page is
+    /// light and the dark one while it is dark.
+    private static var x26f: String {
+        func block(_ scheme: String, _ hues: X26f) -> String {
+            let c = X26f.css
+            let vars: [(String, NSColor)] = [
+                ("search-accent", hues.purple), ("search-on-accent", hues.base), ("search-tab", hues.surface),
+                ("search-line", hues.highlightMed), ("search-muted", hues.subtle), ("search-title", hues.text),
+                ("search-hover", hues.highlightLow), ("search-page", hues.base), ("search-panel", hues.surface),
+                ("search-input", hues.base),
+                ("text-color", hues.text), ("text-color-active", hues.text), ("text-color-secondary", hues.subtle),
+                ("text-color-tertiary", hues.muted), ("text-color-quaternary", hues.highlightHigh),
+                ("separator-color", hues.highlightMed), ("background-color", hues.base),
+                ("background-color-content", hues.base), ("background-color-secondary", hues.surface),
+                ("background-color-tertiary", hues.overlay), ("background-color-intermediate", hues.surface),
+                ("background-color-selected", hues.highlightMed), ("panel-background-color", hues.surface),
+                ("panel-background-color-light", hues.overlay), ("link-text-color", hues.purple),
+                ("selected-foreground-color", hues.text), ("selected-background-color", hues.highlightMed),
+                ("selected-background-color-unfocused", hues.highlightLow),
+                ("selected-background-color-active", hues.highlightHigh),
+                ("selected-background-color-hover", hues.highlightLow), ("glyph-color", hues.subtle),
+                ("glyph-color-active", hues.purple), ("glyph-color-disabled", hues.muted),
+                ("border-color", hues.highlightMed), ("border-color-secondary", hues.highlightLow),
+                ("button-background-color", hues.overlay), ("button-background-color-hover", hues.highlightMed),
+                ("button-background-color-pressed", hues.highlightHigh),
+                ("syntax-highlight-number-color", hues.pink), ("syntax-highlight-bigint-color", hues.pink),
+                ("syntax-highlight-boolean-color", hues.pink), ("syntax-highlight-string-color", hues.yellow),
+                ("syntax-highlight-link-color", hues.purple), ("syntax-highlight-regexp-color", hues.red),
+                ("syntax-highlight-symbol-color", hues.cyan), ("syntax-highlight-comment-color", hues.muted),
+                ("console-secondary-text-color", hues.subtle), ("error-text-color", hues.red),
+                ("popover-background-color", hues.surface), ("popover-border-color", hues.highlightMed),
+                ("overlay-background", hues.surface),
+            ]
+            let body = vars.map { "    --\($0.0): \(c($0.1)) !important;" }.joined(separator: "\n")
+            return "@media (prefers-color-scheme: \(scheme)) {\n  :root, body {\n\(body)\n  }\n}\n"
+        }
+        return block("light", .light) + block("dark", .dark)
+    }
 
     private static let skin = """
     :root {

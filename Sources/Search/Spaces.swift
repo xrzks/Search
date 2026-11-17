@@ -65,15 +65,11 @@ struct Space: Codable, Identifiable, Equatable {
 
 enum Spaces {
     /// A handful, picked to read on the light ground and the dark one
-    /// alike. The first stands for none and is never drawn.
-    static let colours: [Color] = [
-        Color(red: 0.45, green: 0.47, blue: 0.52), // none
-        Color(red: 0.26, green: 0.52, blue: 0.96), // blue
-        Color(red: 0.20, green: 0.66, blue: 0.45), // green
-        Color(red: 0.96, green: 0.62, blue: 0.20), // orange
-        Color(red: 0.90, green: 0.33, blue: 0.40), // red
-        Color(red: 0.62, green: 0.40, blue: 0.90), // violet
-    ]
+    /// alike. The first stands for none and is never drawn. 0x26f's: muted,
+    /// blue, cyan, yellow, red and purple.
+    static let colours: [Color] = (0..<6).map { index in
+        Color(nsColor: NSColor(name: nil) { appearance in Theme.variant(for: appearance).space(index) })
+    }
     static let colourNames = ["None", "Blue", "Green", "Orange", "Red", "Violet"]
 
     /// How much of a space's colour the chrome behind the tabs wears: the

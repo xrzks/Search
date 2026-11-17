@@ -49,10 +49,12 @@ final class MeCard {
 
     static var allowed: Bool { CNContactStore.authorizationStatus(for: .contacts) == .authorized }
 
-    /// The colour the boxes it fills flash: the Mac's accent colour (System
-    /// Settings › Appearance), as CSS, faint enough to read the text through.
+    /// The colour the boxes it fills flash: 0x26f's accent (Theme.swift), as
+    /// CSS, faint enough to read the text through.
     static var tint: String {
-        let color = NSColor.controlAccentColor.usingColorSpace(.sRGB) ?? .systemBlue
+        var resolved: NSColor?
+        NSApp.effectiveAppearance.performAsCurrentDrawingAppearance { resolved = Palette.NS.accent.usingColorSpace(.sRGB) }
+        let color = resolved ?? .systemBlue
         func byte(_ part: CGFloat) -> Int { Int((part * 255).rounded()) }
         return "rgba(\(byte(color.redComponent)), \(byte(color.greenComponent)), \(byte(color.blueComponent)), 0.32)"
     }
