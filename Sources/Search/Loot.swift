@@ -7,6 +7,8 @@ import AppKit
 
 struct Keep: Codable, Identifiable, Equatable {
     var name: String
+    /// The host it came from, for its row. Empty when that isn't known, and
+    /// once it has gone with the history, as `address` goes.
     var from: String
     var path: String
     var date: Date
@@ -71,11 +73,15 @@ final class Loot: ObservableObject {
         save()
     }
 
-    /// History cleared: the addresses are a list of where you have been, and
-    /// can carry a signed link. The files stay listed.
+    /// History cleared: the addresses, and the hosts on the rows, are a list
+    /// of where you have been, and an address can carry a signed link. The
+    /// files stay listed.
     func forgetAddresses() {
-        guard kept.contains(where: { $0.address != nil }) else { return }
-        for index in kept.indices { kept[index].address = nil }
+        guard kept.contains(where: { $0.address != nil || !$0.from.isEmpty }) else { return }
+        for index in kept.indices {
+            kept[index].address = nil
+            kept[index].from = ""
+        }
         save()
     }
 

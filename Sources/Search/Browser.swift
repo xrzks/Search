@@ -1866,11 +1866,14 @@ final class Browser: NSObject, ObservableObject {
             archive.clear()
         }
         // The sites' icons are a list of where you have been, too, and so
-        // are the searches learned from sites visited (SiteSearch.swift).
+        // are the searches learned from sites visited (SiteSearch.swift),
+        // what you hid on them and what you let or never let them use.
         // Every space shares them, so they go whichever history does.
         Favicons.shared.forgetAll()
         SiteSearch.forget()
         Shared.forgetDownloadAddresses()
+        curtain.forgetAll()
+        CaptureChoices.forgetAll()
         announce("History cleared")
     }
 
@@ -2066,11 +2069,7 @@ final class Browser: NSObject, ObservableObject {
     /// Everything a site has been allowed or refused, for the day you want to
     /// change your mind.
     func forgetCaptureChoices() {
-        for key in Store.settings.dictionaryRepresentation().keys
-        where key.hasPrefix("capture.") || key.hasPrefix(Grounded.prefix) {
-            Store.settings.removeObject(forKey: key)
-        }
-        SiteNotifications.shared.objectWillChange.send()
+        CaptureChoices.forgetAll()
         announce("Camera, microphone, location and notification choices forgotten")
     }
 
@@ -9217,7 +9216,7 @@ extension Browser: WKDownloadDelegate {
     }
 
     private func saved(_ file: URL, from source: URL?, keepsAddress: Bool = true) {
-        loot.add(Keep(name: file.lastPathComponent, from: source?.host() ?? "", path: file.path, date: Date(),
+        loot.add(Keep(name: file.lastPathComponent, from: keepsAddress ? source?.host() ?? "" : "", path: file.path, date: Date(),
                       address: keepsAddress ? Keep.address(of: source) : nil))
         announce("Saved \(file.lastPathComponent)", file: file)
     }
