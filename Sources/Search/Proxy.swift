@@ -12,7 +12,7 @@ import WebKit
 // So the configuration is kept in one place and stamped on both halves: each
 // WKWebsiteDataStore as it is made (pages), and every URLSession Search makes
 // itself (favicons, Copy Image, suggestions, extensions, the Web Store, the
-// AI add-on, the updater). This Mac and .local names are left direct, or a
+// AI add-on). This Mac and .local names are left direct, or a
 // proxy would cut you off from them. A router or NAS reached by its address
 // (192.168.…) goes through the proxy like any other address.
 //
@@ -325,15 +325,15 @@ struct ProxySettings: View {
     private var note: String {
         """
         What Search fetches goes through it: pages, favicons, search \
-        suggestions, copied pictures, extensions and the Web Store, the AI \
-        add-on and Search's own updates. A video call is the exception: \
-        WebRTC sends its own traffic over UDP, which a proxy tunnel doesn't \
-        carry, so a call can still show a site your address. This Mac and \
-        .local names stay direct, so a local server still opens; a router \
-        or NAS reached by its address goes through the proxy. macOS's own \
-        services, such as translation model downloads, location and \
-        certificate checks, don't go through it. A proxy that can't be \
-        reached fails rather than going direct.
+        suggestions, copied pictures, extensions and the Web Store, and the \
+        AI add-on. A video call is the exception: WebRTC sends its own \
+        traffic over UDP, which a proxy tunnel doesn't carry, so a call can \
+        still show a site your address. This Mac and .local names stay \
+        direct, so a local server still opens; a router or NAS reached by \
+        its address goes through the proxy. macOS's own services, such as \
+        translation model downloads, location and certificate checks, don't \
+        go through it. A proxy that can't be reached fails rather than going \
+        direct.
         """
     }
 

@@ -5,11 +5,12 @@ import Foundation
 // engine, Engine/search-ai-engine.cpp), and nothing about the page leaves
 // the Mac. Neither the engine nor the model is in Search — a browser of a
 // few megabytes stays one — they are downloaded when you turn this on: the
-// engine as the signed feed offers it (Updater), the model from the one
-// address and the one file pinned below.
+// engine when something offers it, the model from the one address and the
+// one file pinned below. Upstream's signed feed offered the engine; this
+// fork reads no feed, so `offered` stays empty unless something sets it.
 //
 // Nothing downloaded is taken on trust:
-//   - the engine's hash is the signed feed's, its signature Office Commun's
+//   - the engine's hash is the offer's, its signature Office Commun's
 //     Developer ID for its own identifier, checked again before every start;
 //     and it must be sandboxed with nothing added — no network, no files —
 //     or it isn't started at all;
@@ -44,7 +45,8 @@ final class AIEngine: ObservableObject {
         size: 1_107_409_472
     )
 
-    /// The engine the signed feed offers for this Mac, when it does.
+    /// The engine on offer for this Mac, when there is one. Nothing sets it
+    /// now that the feed is gone (see the top of this file).
     struct Offer: Equatable {
         let version: Int
         let url: URL

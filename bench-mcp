@@ -652,10 +652,6 @@ def tool_bench(args):
         raise Refusal("bad_request", 'request is a ./bench socket request, such as {"do": "tabs"}')
     if request["do"] == "quit":
         raise Refusal("bad_request", "close_session quits the world")
-    # The updater swaps the app it runs from: this checkout's build, which may
-    # be the browser someone uses every day. Nothing a session drives reaches it.
-    if request["do"] == "update":
-        raise Refusal("bad_request", "updates aren't driven from a session")
     request = dict(request)
     if request.get("id") in s.pages:
         request["id"] = s.pages[request["id"]]

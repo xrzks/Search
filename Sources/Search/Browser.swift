@@ -2860,8 +2860,6 @@ final class Browser: NSObject, ObservableObject {
             }
             welcoming = !prefs.welcomed
             newsShowing = WhatsNew.due(prefs: prefs, welcoming: welcoming)
-            // Once a day, quietly: is there a newer one?
-            Updater.shared.checkIfDue { [weak self] line in self?.announce(line) }
             // With your other Macs, if that is on (see Sync.swift).
             Sync.shared.start()
             // An icon that arrives is looked for again by every tab showing

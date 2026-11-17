@@ -196,8 +196,6 @@ try:
     ok("bench passthrough takes a page handle", not err and "Hello Nav" in said.get("text", ""), said)
     said, err = tool("bench", session=session, request={"do": "quit"})
     ok("bench passthrough leaves quitting to close_session", err and code(said) == "bad_request", said)
-    said, err = tool("bench", session=session, request={"do": "update", "action": "check"})
-    ok("bench passthrough refuses the updater", err and code(said) == "bad_request", said)
     said, err = tool("window_state", session=session)
     ok("window_state", not err and isinstance(said, dict), said)
 

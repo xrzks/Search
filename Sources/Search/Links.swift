@@ -25,8 +25,8 @@ final class Links: NSObject, NSApplicationDelegate {
 
     @MainActor private static var askingToQuit = false
 
-    /// Only the user's Quit command asks; updater and system termination
-    /// still go straight through the existing cleanup below.
+    /// Only the user's Quit command asks; system termination still goes
+    /// straight through the existing cleanup below.
     @MainActor static func shouldQuit() -> Bool {
         guard !askingToQuit else { return false }
         guard Store.settings.bool(forKey: Preferences.confirmQuitKey) else { return true }
