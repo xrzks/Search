@@ -331,9 +331,9 @@ struct ProxySettings: View {
         still show a site your address. This Mac and .local names stay \
         direct, so a local server still opens; a router or NAS reached by \
         its address goes through the proxy. macOS's own services, such as \
-        translation model downloads, location and certificate checks, don't \
-        go through it. A proxy that can't be reached fails rather than going \
-        direct.
+        translation model downloads, location, certificate checks and Safe \
+        Browsing's fraud warnings, don't go through it. A proxy that can't \
+        be reached fails rather than going direct.
         """
     }
 
