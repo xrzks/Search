@@ -18,6 +18,7 @@ extension ObservableObject {
 final class Favicons {
     static let shared = Favicons()
     func forget(_ url: URL) {}
+    func left(_ gone: [URL], kept: [URL]) {}
 }
 
 enum AddressCommand {

@@ -82,4 +82,26 @@ final class FaviconMemoryTests: XCTestCase {
         icons.forgetShy()
         XCTAssertNil(icons.cached(for: page, shy: true))
     }
+
+    func testAPageHistoryLetsGoLeavesTheIndexUnlessHistoryStillHasItsPath() async throws {
+        _ = NSApplication.shared
+        let icons = Favicons()
+        let rep = try XCTUnwrap(NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 16, pixelsHigh: 16,
+                                                 bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true,
+                                                 isPlanar: false, colorSpaceName: .deviceRGB,
+                                                 bytesPerRow: 0, bitsPerPixel: 0))
+        let png = try XCTUnwrap(rep.representation(using: .png, properties: [:]))
+        let icon = try XCTUnwrap(URL(string: "data:image/png;base64," + png.base64EncodedString()))
+        let gone = "\(UUID().uuidString.lowercased()).example"
+        let stays = "\(UUID().uuidString.lowercased()).example"
+        await icons.download([icon], site: gone, page: "/page", dark: Favicons.dark, shy: false)
+        await icons.download([icon], site: stays, page: "/page", dark: Favicons.dark, shy: false)
+        XCTAssertNotNil(icons.cached(gone))
+        XCTAssertNotNil(icons.cached(stays))
+        icons.left([try XCTUnwrap(URL(string: "https://\(gone)/page")),
+                    try XCTUnwrap(URL(string: "https://\(stays)/page?a=1"))],
+                   kept: [try XCTUnwrap(URL(string: "https://\(stays)/page?b=2"))])
+        XCTAssertNil(icons.cached(gone), "a page History let go of kept its icon")
+        XCTAssertNotNil(icons.cached(stays), "one address went, but History still has its page")
+    }
 }
