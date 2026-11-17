@@ -6172,6 +6172,12 @@ enum ExtensionShims {
             // As in Chrome, a flow is non-interactive unless it says otherwise:
             // run out of sight, it either comes straight back or fails.
             if spec["interactive"] as? Bool != true {
+                // Out of sight only on a site it already has access to, as
+                // with its fetch; anywhere else is a page someone has to see.
+                try Extensions.mayOpen(url)
+                guard ExtensionFetch.granted(url, to: context) else {
+                    throw ExtensionAuth.Quiet.failure("User interaction required.")
+                }
                 let wait = (spec["timeoutMsForNonInteractive"] as? NSNumber).map { $0.doubleValue / 1000 }
                 return try await ExtensionAuth.quietly(url, extension: id,
                                                        abortOnLoad: spec["abortOnLoadForNonInteractive"] as? Bool ?? true,
@@ -6500,11 +6506,12 @@ enum ExtensionAuth {
     ///
     /// What it allows, no more than a tab opened behind would (which any
     /// extension may do, with no permission): an extension with "identity"
-    /// has an http(s) page load out of sight, with the cookies of the space
-    /// in front, for at most a minute. It learns only the address it is sent
-    /// to on its own chromiumapp.org, never the page. The page gets no other
-    /// extension, no popup, dialog, download or app launch, and no other
-    /// scheme. One flow per extension at a time; a new one ends the last.
+    /// has an http(s) page of a site it already has access to load out of
+    /// sight, with the cookies of the space in front, for at most a minute.
+    /// It learns only the address it is sent to on its own chromiumapp.org,
+    /// never the page. The page gets no other extension, no popup, dialog,
+    /// download or app launch, and no other scheme. One flow per extension
+    /// at a time; a new one ends the last.
     static func quietly(_ url: URL, extension id: String, abortOnLoad: Bool, timeout: TimeInterval?) async throws -> URL {
         guard ["http", "https"].contains(url.scheme?.lowercased() ?? "") else {
             throw Quiet.failure("Authorization page could not be loaded.")
