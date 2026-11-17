@@ -10,11 +10,15 @@ import SwiftUI
 //
 // - a link from another app (Search as the Mac's browser);
 // - a link a page opens in a new tab — a target="_blank" click, ⌘-click,
-//   the middle button, Open Link in New Tab — from a page in another space.
+//   the middle button, Open Link in New Tab — from a page in another space;
+// - an address typed after ⌘T, ⌘L or ⌘K, in a new tab there, with the tab
+//   you were on left as it was; ⌘Return opens it behind, in that space's
+//   row, without going there.
 //
 // The tab opens in that space, and the window that has it, or this one
-// switched to it, comes to it. A link followed in its own tab, an address
-// typed, a private tab's links, a window the page sizes ("Sign in with…",
+// switched to it, comes to it. A link followed in its own tab, a search, a
+// tab picked from the field's list, a private tab's links and addresses, a
+// window the page sizes ("Sign in with…",
 // which needs its opener) and anything that isn't http or https stay where
 // they are. So does a link whose rule names a space that has gone: the rule
 // is passed over, and the link opens as it always did.
@@ -164,6 +168,45 @@ extension Browser {
         target.open(url, foreground: true)
         if target !== self { Browsers.show(target) }
         return true
+    }
+
+    /// The space a rule sends an address typed into the field to, when it
+    /// isn't this one; nil to open it here as always. Never from a private
+    /// tab, whose new tabs are private too.
+    func typedSpace(for url: URL) -> Space? {
+        guard !isPopup, active?.shy != true, let space = SpaceRoutes.space(for: url), space.id != spaceID
+        else { return nil }
+        return space
+    }
+
+    /// An address typed into the field, in a new tab in the space a rule
+    /// sends it to: in front, or behind (⌘Return), into the row of a window
+    /// that shows the space or else this window's row for it, asleep until
+    /// it is gone to. Another profile's space that no window shows can only
+    /// be had by going there, so behind or not, it opens in front.
+    func openTyped(_ url: URL, in space: Space, front: Bool) {
+        if !front {
+            if let shown = Browsers.all.first(where: { $0.isOpen && !$0.isPopup && $0.spaceID == space.id }) {
+                shown.open(url, foreground: false, mayWait: true)
+                announce("Opened in \(space.name)")
+                return
+            }
+            if spaces.contains(where: { $0.id == space.id }) {
+                var row = parked[space.id] ?? loadRow(space.id)
+                let tab = Tab(configuration: Web.configuration(space: space.id))
+                prepare(tab)
+                tab.restore(url: url, title: url.host ?? "")
+                row.tabs.append(tab)
+                if row.active == nil { row.active = tab.id }
+                parked[space.id] = row
+                writeSession(now: true, space: space.id, row: row)
+                announce("Opened in \(space.name)")
+                return
+            }
+        }
+        guard let target = SpaceRoutes.window(for: space, from: self) else { return }
+        target.open(url, foreground: true)
+        if target !== self { Browsers.show(target) }
     }
 }
 
