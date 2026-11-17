@@ -329,9 +329,10 @@ struct ProxySettings: View {
         WebRTC sends its own traffic over UDP, which a proxy tunnel doesn't \
         carry, so a call can still show a site your address. This Mac and \
         .local names stay direct, so a local server still opens; a router \
-        or NAS reached by its address goes through the proxy. A proxy that \
-        can't be reached fails \
-        rather than going direct.
+        or NAS reached by its address goes through the proxy. macOS's own \
+        services, such as translation model downloads, location and \
+        certificate checks, don't go through it. A proxy that can't be \
+        reached fails rather than going direct.
         """
     }
 

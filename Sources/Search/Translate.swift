@@ -28,8 +28,9 @@ import WebKit
 // later (a MutationObserver) follows, until Show Original, the next page,
 // or the tab going to sleep.
 //
-// Off unless switched on in Settings › General, and not there before
-// macOS 15. A private tab can translate; nothing it does is remembered.
+// Always there, and it acts only when asked, or for a language set to
+// always translate; not there before macOS 15. A private tab can translate;
+// nothing it does is remembered.
 
 /// What a tab's translation is doing, for the sign beside its title.
 struct TranslationMark: Equatable {
