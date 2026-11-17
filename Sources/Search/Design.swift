@@ -9,7 +9,9 @@ import AppKit
 // resolves itself against whatever appearance the window has. The window
 // takes its appearance from the app, and the app from Settings › Appearance:
 // light, dark, or whatever the Mac is doing. Nothing else in the code knows
-// which it is.
+// which it is. With Rosé Pine's colours on (Settings › Appearance ›
+// Colours), each pair gives way to the variant's colour for that role (see
+// Theme.swift).
 enum Palette {
     static let ground = Color(nsColor: NS.ground)
     static let ink = Color(nsColor: NS.ink)             // neutral-900 · neutral-100
@@ -38,37 +40,46 @@ enum Palette {
     /// way, and one anybody can (see SiteCard.swift).
     static let safe = Color(nsColor: NS.safe)           // green-700 · green-400
     static let unsafe = Color(nsColor: NS.unsafe)       // amber-700 · amber-400
+    /// The Mac's accent colour, or the colours' own: for what SwiftUI tints.
+    static let accent = Color(nsColor: NS.accent)
 
     /// The same colours for the AppKit corners of the app — a text field's
     /// ink, a window's background — which want an NSColor and keep it.
     enum NS {
-        static let ground = pair(1.0, 0.11)
-        static let ink = pair(0.09, 0.93)
-        static let muted = pair(0.55, 0.58)
-        static let faint = pair(0.83, 0.32)
-        static let hairline = pair(0.91, 0.20)
-        static let wash = pair(0.937, 0.175)
-        static let pinLive = pair(0.90, 0.21)
-        static let hover = pair(0.965, 0.15)
-        static let frame = pair(0.955, 0.075)
-        static let sideWash = pair(0.895, 0.155)
-        static let sideHover = pair(0.915, 0.13)
-        static let sideTile = pair(0.925, 0.115)
-        static let sidePinLive = pair(0.86, 0.19)
+        static let ground = pair(1.0, 0.11, \.ground)
+        static let ink = pair(0.09, 0.93, \.ink)
+        static let muted = pair(0.55, 0.58, \.quiet)
+        static let faint = pair(0.83, 0.32, \.faint)
+        static let hairline = pair(0.91, 0.20, \.hairline)
+        static let wash = pair(0.937, 0.175, \.wash)
+        static let pinLive = pair(0.90, 0.21, \.pinLive)
+        static let hover = pair(0.965, 0.15, \.hover)
+        static let frame = pair(0.955, 0.075, \.frame)
+        static let sideWash = pair(0.895, 0.155, \.sideWash)
+        static let sideHover = pair(0.915, 0.13, \.sideHover)
+        static let sideTile = pair(0.925, 0.115, \.sideTile)
+        static let sidePinLive = pair(0.86, 0.19, \.sidePinLive)
         /// The resting traffic lights, drawn by hand when the app is behind.
-        static let resting = pair(0.80, 0.30)
-        static let safe = tint(light: (0.08, 0.50, 0.24), dark: (0.29, 0.87, 0.50))
-        static let unsafe = tint(light: (0.71, 0.33, 0.04), dark: (0.98, 0.75, 0.14))
+        static let resting = pair(0.80, 0.30, \.resting)
+        static let safe = tint(light: (0.08, 0.50, 0.24), dark: (0.29, 0.87, 0.50), \.safe)
+        static let unsafe = tint(light: (0.71, 0.33, 0.04), dark: (0.98, 0.75, 0.14), \.unsafe)
+        /// The Mac's accent colour, or the colours' own (see Theme.swift).
+        static let accent = NSColor(name: nil) { appearance in
+            Theme.variant(for: appearance)?.accent ?? .controlAccentColor
+        }
 
-        private static func tint(light: (CGFloat, CGFloat, CGFloat), dark: (CGFloat, CGFloat, CGFloat)) -> NSColor {
+        private static func tint(light: (CGFloat, CGFloat, CGFloat), dark: (CGFloat, CGFloat, CGFloat),
+                                 _ themed: KeyPath<RosePine, NSColor>) -> NSColor {
             NSColor(name: nil) { appearance in
+                if let variant = Theme.variant(for: appearance) { return variant[keyPath: themed] }
                 let c = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? dark : light
                 return NSColor(srgbRed: c.0, green: c.1, blue: c.2, alpha: 1)
             }
         }
 
-        private static func pair(_ light: CGFloat, _ dark: CGFloat) -> NSColor {
+        private static func pair(_ light: CGFloat, _ dark: CGFloat, _ themed: KeyPath<RosePine, NSColor>) -> NSColor {
             NSColor(name: nil) { appearance in
+                if let variant = Theme.variant(for: appearance) { return variant[keyPath: themed] }
                 let dim = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
                 return NSColor(white: dim ? dark : light, alpha: 1)
             }

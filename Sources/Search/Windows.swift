@@ -202,11 +202,13 @@ enum Browsers {
         let popup = browser.isPopup
         let host: NSView
         if popup {
-            let view = NSHostingView(rootView: PopupWindowView(browser: browser).frame(minWidth: 200, minHeight: 150))
+            let view = NSHostingView(rootView: PopupWindowView(browser: browser).frame(minWidth: 200, minHeight: 150)
+                .tint(Palette.accent))
             view.sizingOptions = [.minSize]
             host = view
         } else {
-            let view = NSHostingView(rootView: ContentView(browser: browser).frame(minWidth: 640, minHeight: 420))
+            let view = NSHostingView(rootView: ContentView(browser: browser).frame(minWidth: 640, minHeight: 420)
+                .tint(Palette.accent))
             view.sizingOptions = [.minSize]
             host = view
         }

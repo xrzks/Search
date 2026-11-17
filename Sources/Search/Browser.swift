@@ -3202,6 +3202,12 @@ final class Browser: NSObject, ObservableObject {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { self?.relook() }
             }
             .store(in: &bag)
+        // What holds the colours in a sheet of its own rather than asking as
+        // it is drawn: an article in reading mode, and the inspector's coat.
+        NotificationCenter.default.publisher(for: Theme.changed)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.recolour() }
+            .store(in: &bag)
         DistributedNotificationCenter.default().publisher(for: Notification.Name("AppleInterfaceThemeChangedNotification"))
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -3354,6 +3360,17 @@ final class Browser: NSObject, ObservableObject {
     func toggleSubstitution(_ kind: Substitution, in web: WKWebView? = nil) {
         kind.toggle(in: web ?? active?.built ?? (tabs + parkedTabs).lazy.compactMap(\.built).first)
         objectWillChange.send()
+    }
+
+    /// Settings › Appearance › Colours changed (see Theme.swift): reading
+    /// mode's sheet written again where an article is up, and the inspector
+    /// coated again.
+    private func recolour() {
+        guard let sheet = try? String(data: JSONSerialization.data(withJSONObject: [Reader.sheet]), encoding: .utf8) else { return }
+        for tab in tabs where tab.reader {
+            tab.built?.evaluateJavaScript("var s = document.getElementById('office-reader-sheet'); if (s) s.textContent = \(sheet)[0];")
+        }
+        coatInspectors()
     }
 
     private func relook() {

@@ -564,8 +564,12 @@ struct SettingsPanel: View {
         switch id {
         case "look":
             Pictures(options: Look.allCases.map { look in
-                (look, look == .system ? "Auto" : look.title, AnyView(LookPicture(look: look)))
+                (look, look == .system ? "Auto" : look.title, AnyView(LookPicture(look: look, colours: prefs.colours)))
             }, selection: $prefs.look)
+        case "colours":
+            Pictures(options: Colours.allCases.map { colours in
+                (colours, colours.title, AnyView(LookPicture(look: prefs.look, colours: colours)))
+            }, selection: $prefs.colours)
         case "pages.dusk": Switch(on: $prefs.darkensPages)
         case "inspector.chrome": Switch(on: $prefs.inspectorChrome)
         case "inspector.dark": Switch(on: $prefs.inspectorDark)
@@ -1353,25 +1357,29 @@ private struct CardPicture: View {
 /// the one Search is in now.
 private struct LookPicture: View {
     let look: Look
+    /// Drawn in these colours whatever is on, so each picture shows its own.
+    let colours: Colours
 
     var body: some View {
         switch look {
-        case .light: Window(dark: false)
-        case .dark: Window(dark: true)
+        case .light: Window(dark: false, colours: colours)
+        case .dark: Window(dark: true, colours: colours)
         default:
             ZStack {
-                Window(dark: false)
-                Window(dark: true).mask(HStack(spacing: 0) { Color.clear; Color.black })
+                Window(dark: false, colours: colours)
+                Window(dark: true, colours: colours).mask(HStack(spacing: 0) { Color.clear; Color.black })
             }
         }
     }
 
     private struct Window: View {
         let dark: Bool
+        let colours: Colours
         var body: some View {
-            let ground = Color(white: dark ? 0.11 : 1)
-            let wash = Color(white: dark ? 0.17 : 0.93)
-            let ink = Color(white: dark ? 0.93 : 0.09)
+            let rose = colours == .rosePine ? (dark ? RosePine.moon : RosePine.dawn) : nil
+            let ground = rose.map { Color(nsColor: $0.ground) } ?? Color(white: dark ? 0.11 : 1)
+            let wash = rose.map { Color(nsColor: $0.wash) } ?? Color(white: dark ? 0.17 : 0.93)
+            let ink = rose.map { Color(nsColor: $0.ink) } ?? Color(white: dark ? 0.93 : 0.09)
             HStack(spacing: 4) {
                 VStack(alignment: .leading, spacing: 3) {
                     Capsule().fill(ink.opacity(0.55)).frame(width: 14, height: 3.5)

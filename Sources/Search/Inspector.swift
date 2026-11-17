@@ -94,7 +94,7 @@ extension Browser {
         for browser in Browsers.all { browser.coatInspectors() }
     }
 
-    private func coatInspectors() {
+    func coatInspectors() {
         for tab in tabs {
             guard let web = tab.built, let inspector = inspector(of: web) else { continue }
             if inspectorPage(inspector) != nil || asks(inspector, "isVisible") {
@@ -163,8 +163,8 @@ extension Browser {
 
     /// One stylesheet, light or dark with the page. Appended once and
     /// replaced in place: the page's own rules follow the variables.
-    private static let paintScript: String = {
-        let css = skin
+    private static var paintScript: String {
+        let css = (skin + (Theme.colours == .rosePine ? rosePine : ""))
             .replacingOccurrences(of: "\\", with: "\\\\")
             .replacingOccurrences(of: "`", with: "\\`")
             .replacingOccurrences(of: "${", with: "\\${")
@@ -181,7 +181,47 @@ extension Browser {
           return "ok";
         })()
         """
-    }()
+    }
+
+    /// Rosé Pine over Chrome's colors, with Settings › Appearance › Colours
+    /// (see Theme.swift): the same names, Dawn while the page is light and
+    /// Moon while it is dark.
+    private static var rosePine: String {
+        func block(_ scheme: String, _ rose: RosePine) -> String {
+            let c = RosePine.css
+            let vars: [(String, NSColor)] = [
+                ("search-accent", rose.iris), ("search-on-accent", rose.base), ("search-tab", rose.surface),
+                ("search-line", rose.highlightMed), ("search-muted", rose.subtle), ("search-title", rose.text),
+                ("search-hover", rose.highlightLow), ("search-page", rose.base), ("search-panel", rose.surface),
+                ("search-input", rose.base),
+                ("text-color", rose.text), ("text-color-active", rose.text), ("text-color-secondary", rose.subtle),
+                ("text-color-tertiary", rose.muted), ("text-color-quaternary", rose.highlightHigh),
+                ("separator-color", rose.highlightMed), ("background-color", rose.base),
+                ("background-color-content", rose.base), ("background-color-secondary", rose.surface),
+                ("background-color-tertiary", rose.overlay), ("background-color-intermediate", rose.surface),
+                ("background-color-selected", rose.highlightMed), ("panel-background-color", rose.surface),
+                ("panel-background-color-light", rose.overlay), ("link-text-color", rose.iris),
+                ("selected-foreground-color", rose.text), ("selected-background-color", rose.highlightMed),
+                ("selected-background-color-unfocused", rose.highlightLow),
+                ("selected-background-color-active", rose.highlightHigh),
+                ("selected-background-color-hover", rose.highlightLow), ("glyph-color", rose.subtle),
+                ("glyph-color-active", rose.iris), ("glyph-color-disabled", rose.muted),
+                ("border-color", rose.highlightMed), ("border-color-secondary", rose.highlightLow),
+                ("button-background-color", rose.overlay), ("button-background-color-hover", rose.highlightMed),
+                ("button-background-color-pressed", rose.highlightHigh),
+                ("syntax-highlight-number-color", rose.rose), ("syntax-highlight-bigint-color", rose.rose),
+                ("syntax-highlight-boolean-color", rose.rose), ("syntax-highlight-string-color", rose.gold),
+                ("syntax-highlight-link-color", rose.iris), ("syntax-highlight-regexp-color", rose.love),
+                ("syntax-highlight-symbol-color", rose.foam), ("syntax-highlight-comment-color", rose.muted),
+                ("console-secondary-text-color", rose.subtle), ("error-text-color", rose.love),
+                ("popover-background-color", rose.surface), ("popover-border-color", rose.highlightMed),
+                ("overlay-background", rose.surface),
+            ]
+            let body = vars.map { "    --\($0.0): \(c($0.1)) !important;" }.joined(separator: "\n")
+            return "@media (prefers-color-scheme: \(scheme)) {\n  :root, body {\n\(body)\n  }\n}\n"
+        }
+        return block("light", .dawn) + block("dark", .moon)
+    }
 
     private static let skin = """
     :root {

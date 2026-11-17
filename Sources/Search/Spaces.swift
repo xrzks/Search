@@ -65,15 +65,20 @@ struct Space: Codable, Identifiable, Equatable {
 
 enum Spaces {
     /// A handful, picked to read on the light ground and the dark one
-    /// alike. The first stands for none and is never drawn.
+    /// alike. The first stands for none and is never drawn. With Rosé
+    /// Pine's colours on, its own: muted, pine, foam, gold, love and iris.
     static let colours: [Color] = [
-        Color(red: 0.45, green: 0.47, blue: 0.52), // none
-        Color(red: 0.26, green: 0.52, blue: 0.96), // blue
-        Color(red: 0.20, green: 0.66, blue: 0.45), // green
-        Color(red: 0.96, green: 0.62, blue: 0.20), // orange
-        Color(red: 0.90, green: 0.33, blue: 0.40), // red
-        Color(red: 0.62, green: 0.40, blue: 0.90), // violet
-    ]
+        (0, 0.45, 0.47, 0.52), // none
+        (1, 0.26, 0.52, 0.96), // blue
+        (2, 0.20, 0.66, 0.45), // green
+        (3, 0.96, 0.62, 0.20), // orange
+        (4, 0.90, 0.33, 0.40), // red
+        (5, 0.62, 0.40, 0.90), // violet
+    ].map { index, red, green, blue in
+        Color(nsColor: NSColor(name: nil) { appearance in
+            Theme.variant(for: appearance)?.space(index) ?? NSColor(srgbRed: red, green: green, blue: blue, alpha: 1)
+        })
+    }
     static let colourNames = ["None", "Blue", "Green", "Orange", "Red", "Violet"]
 
     /// How much of a space's colour the chrome behind the tabs wears: the

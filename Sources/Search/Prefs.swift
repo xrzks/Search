@@ -197,6 +197,16 @@ final class Preferences: ObservableObject {
             look.apply()
         }
     }
+    /// Search's own greys, or Rosé Pine's: Dawn while light, Moon while
+    /// dark (see Theme.swift).
+    @Published var colours: Colours {
+        didSet {
+            store.set(colours.rawValue, forKey: "colours")
+            guard colours != oldValue else { return }
+            Theme.colours = colours
+            Theme.repaint(back: look)
+        }
+    }
     /// Titles down a side instead of across the top.
     @Published var sidebar: Bool {
         didSet { store.set(sidebar, forKey: "sidebar") }
@@ -1006,6 +1016,9 @@ final class Preferences: ObservableObject {
         }
         let chosen = store.string(forKey: "look").flatMap(Look.init) ?? .system
         look = chosen
+        let palette = store.string(forKey: "colours").flatMap(Colours.init) ?? .search
+        colours = palette
+        Theme.colours = palette
         // Before the first window, and not deferred: the window that is about
         // to be made should be made in the right appearance. Through `shared`
         // rather than `NSApp`: on macOS 14 SwiftUI builds this before it has
@@ -1262,6 +1275,7 @@ final class Preferences: ObservableObject {
     /// written back.
     func reread() {
         take(\.look, "look", store.string(forKey: "look").flatMap(Look.init), or: .system)
+        take(\.colours, "colours", store.string(forKey: "colours").flatMap(Colours.init), or: .search)
         take(\.navigationLeft, store.bool(forKey: "toolbar.left"))
         take(\.compactStrip, store.bool(forKey: "tabs.compact"))
         take(\.sidebar, "sidebar", store.object(forKey: "sidebar") as? Bool,

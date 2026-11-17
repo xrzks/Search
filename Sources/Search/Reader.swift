@@ -18,7 +18,22 @@ enum Reader {
     private static let dark = "color-scheme:dark;--r-ground:#1c1c1c;--r-ink:#e0e0e0;--r-quiet:#8a8a8a;"
         + "--r-aside:#a8a8a8;--r-rule:#333;--r-code:#2a2a2a;--r-picture:brightness(.92)"
 
-    static let sheet = [
+    /// The sheet, and Rosé Pine's colours over it when they are on (see
+    /// Theme.swift): Dawn for the light look, Moon for the dark.
+    static var sheet: String {
+        guard Theme.colours == .rosePine else { return plain }
+        func look(_ rose: RosePine) -> String {
+            "--r-ground:\(RosePine.css(rose.ground));--r-ink:\(RosePine.css(rose.ink));--r-quiet:\(RosePine.css(rose.muted));"
+                + "--r-aside:\(RosePine.css(rose.subtle));--r-rule:\(RosePine.css(rose.highlightMed));"
+                + "--r-code:\(RosePine.css(rose.overlay));--r-link:\(RosePine.css(rose.iris))"
+        }
+        let moon = look(.moon)
+        return plain + ":root{" + look(.dawn) + "}"
+            + "@media (prefers-color-scheme:dark){:root:not([data-office-look=light]){" + moon + "}}"
+            + ":root[data-office-look=dark]{" + moon + "}"
+    }
+
+    private static let plain = [
         // Light, or dark as the window is or as chosen in the corner
         // (ReaderLook puts it on <html>, which the reader keeps). The dark
         // ground is the window's own (Palette.ground); the text a shade
@@ -52,7 +67,7 @@ enum Reader {
         "color:var(--r-aside);margin:0 0 1.6em}",
         "#office-reader .office-above ul{padding-left:1.2em}",
         "#office-reader .office-above h2{margin:.4em 0}",
-        "#office-reader a{color:var(--r-ink);text-underline-offset:3px}",
+        "#office-reader a{color:var(--r-link,var(--r-ink));text-underline-offset:3px}",
         "#office-reader h2,#office-reader h3{font:600 20px/1.3 -apple-system,sans-serif;",
         "margin:2em 0 .6em}",
         "#office-reader h4,#office-reader h5,#office-reader h6{font:600 16px/1.4 -apple-system,sans-serif;",
