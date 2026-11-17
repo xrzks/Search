@@ -1029,7 +1029,7 @@ struct SettingsPanel: View {
     private var searchDetail: String {
         guard prefs.engine == .custom else { return "Where words that aren't an address go" }
         guard Engine.accepts(Engine.written(prefs.customEngine)) else {
-            return "An http or https address with %s where the words go. Until then, Google"
+            return "An http or https address with %s where the words go. Until then, DuckDuckGo"
         }
         return "Words go to \(prefs.engine.name(custom: prefs.customEngine))"
     }
@@ -1040,7 +1040,7 @@ struct SettingsPanel: View {
         }
         guard engine == .custom else { return "Shift-Return sends what you typed to \(engine.title)" }
         guard Engine.accepts(Engine.written(prefs.shiftCustom)) else {
-            return "An http or https address with %s where the words go. Until then, Google"
+            return "An http or https address with %s where the words go. Until then, DuckDuckGo"
         }
         return "Shift-Return sends what you typed to \(engine.name(custom: prefs.shiftCustom))"
     }

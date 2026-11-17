@@ -3,7 +3,7 @@ import Foundation
 enum Engine: String, CaseIterable, Identifiable {
     case google, duckduckgo, bing, ecosia, startpage, kagi, brave, qwant, custom
 
-    static let standard = Engine.google
+    static let standard = Engine.duckduckgo
 
     var id: String { rawValue }
 
@@ -44,7 +44,7 @@ enum Engine: String, CaseIterable, Identifiable {
 
     /// A custom engine's address as people bring it: copied from another
     /// browser with {searchTerms} where the words go, or typed without its
-    /// https://. Either one was turned away, and every search went to Google.
+    /// https://. Either one was turned away, and every search went to DuckDuckGo.
     static func written(_ template: String) -> String {
         var text = template.trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: "{searchTerms}", with: "%s")
