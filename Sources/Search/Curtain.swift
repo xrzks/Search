@@ -154,6 +154,15 @@ final class Curtain: ObservableObject {
         save()
     }
 
+    /// Clear History: every site's list goes, since together they name the
+    /// sites you have been to. A page on screen keeps its things off until
+    /// it loads again.
+    func forgetAll() {
+        guard !byHost.isEmpty else { return }
+        byHost = [:]
+        save()
+    }
+
     /// The stylesheet for a site. Each selector stands alone in its own rule:
     /// one selector the browser can't parse would otherwise take the whole
     /// list down with it.

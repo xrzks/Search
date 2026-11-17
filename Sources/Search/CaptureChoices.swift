@@ -119,6 +119,18 @@ enum CaptureChoices {
         return entries.values.sorted { $0.id < $1.id }
     }
 
+    /// Every answer, with the sites whose videos stay put (Grounded): Forget
+    /// choices, and Clear History, since together they name sites you have
+    /// been to. A site asks again next time.
+    @MainActor
+    static func forgetAll(in settings: UserDefaults = Store.settings) {
+        for key in settings.dictionaryRepresentation().keys
+        where key.hasPrefix("capture.") || key.hasPrefix(Grounded.prefix) {
+            settings.removeObject(forKey: key)
+        }
+        SiteNotifications.shared.objectWillChange.send()
+    }
+
     // Invalidate a queued question if the user changes its setting before it
     // can be shown. The stored answer format remains unchanged.
     private static var revisions: [String: UInt] = [:]
