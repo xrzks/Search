@@ -240,10 +240,11 @@ enum ProxyNetwork {
 
     /// For the places that reached for `URLSession.shared`, which takes no
     /// configuration at all and so could never be proxied. One session, made
-    /// again when the proxy changes.
+    /// again when the proxy changes. Ephemeral: its cookies and cache live in
+    /// memory and go with the session, never on disk.
     static var session: URLSession {
         kept("shared") {
-            let configuration = URLSessionConfiguration.default
+            let configuration = URLSessionConfiguration.ephemeral
             stamp(configuration)
             return URLSession(configuration: configuration)
         }
