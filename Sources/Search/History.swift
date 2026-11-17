@@ -366,8 +366,8 @@ final class History: ObservableObject {
     /// page visited twice, and it must not leave the History window and the
     /// field while it is still the page you are on. The rest of the cap goes
     /// to the highest `score`, the order the file keeps (see `write`, which
-    /// holds the file to the top `cap` alone). What goes takes its text and
-    /// its share of every prefix with it.
+    /// holds the file to the top `cap` alone). What goes takes its text,
+    /// its share of every prefix and its page's icon with it.
     private func prune() {
         guard visits.count > History.cap + History.slack else { return }
         let now = Date()
@@ -379,7 +379,9 @@ final class History: ObservableObject {
             .prefix(History.cap - History.slack)
         kept.formUnion(best.map(\.key))
         let dropped = Set(visits.keys).subtracting(kept)
+        let gone = dropped.compactMap { visits[$0].flatMap { URL(string: $0.url) } }
         visits = visits.filter { kept.contains($0.key) }
+        Favicons.shared.left(gone, kept: visits.values.compactMap { URL(string: $0.url) })
         for key in dropped {
             if let old = pageText.removeValue(forKey: key) { credit(old, by: -old.weight) }
         }
