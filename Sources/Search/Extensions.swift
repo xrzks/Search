@@ -1316,7 +1316,9 @@ final class Extensions: NSObject, ObservableObject {
 
     /// Once a day, the store is asked whether anything installed from it has
     /// a newer version; if so it is fetched, checked and swapped in. One that
-    /// asks for more than it was installed with is asked about first.
+    /// asks for more than it was installed with is asked about first. A
+    /// disabled one is left out, so Google isn't told of it, until the first
+    /// check after it is turned back on.
     func checkForUpdates() {
         // A browser left open for days must keep checking, even if today's check is not due.
         if updateClock == nil {
@@ -1329,7 +1331,7 @@ final class Extensions: NSObject, ObservableObject {
         let last = Store.settings.object(forKey: key) as? Date ?? .distantPast
         guard Date().timeIntervalSince(last) > 60 * 60 * 20 else { return }
         Store.settings.set(Date(), forKey: key)
-        for item in installed where item.fromStore {
+        for item in installed where item.fromStore && item.enabled {
             Task { await update(item) }
         }
     }
