@@ -8868,12 +8868,18 @@ final class Browser: NSObject, ObservableObject {
         }
 
         let target: URL?
+        // An address rather than words for an engine: only an address
+        // follows a rule to its space (see SpaceRoutes.swift).
+        let place: Bool
         if let picked, offers.indices.contains(picked) {
             target = offers[picked].url
+            place = [.open, .visited, .bookmark, .known].contains(offers[picked].kind)
         } else if ending != nil {
             target = Address.url(from: completed)
+            place = true
         } else {
             target = destination(for: typed)
+            place = siteChip == nil && Address.url(from: typed) != nil
         }
 
         guard let url = target else {
@@ -8884,6 +8890,15 @@ final class Browser: NSObject, ObservableObject {
         if let page = InternalPage(url: url) {
             show(page)
             picked = nil
+            return
+        }
+        // A site sent to a space of its own: a new tab there, and nothing
+        // here changes but the field, put away.
+        if place, let space = typedSpace(for: url) {
+            editing = false
+            typed = ""
+            picked = nil
+            openTyped(url, in: space, front: front || !aside)
             return
         }
         // An address typed (or finished from what was typed), not a search:

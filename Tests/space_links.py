@@ -12,6 +12,10 @@ localhost on the same port. Checked:
 - a target=_blank click and a ⌘-click from a page in the first space open
   their localhost tab in Two, and not in the first space;
 - a plain link followed in its own tab stays in its space;
+- an address to localhost typed after ⌘L opens in Two, and the tab it was
+  typed over stays as it was; after ⌘T, the same;
+- one typed with ⌘Return opens in Two's row without going there;
+- a search, on an engine served from localhost, stays where you are;
 - the same links from a private tab stay in the first space.
 
 Nothing here makes, shows or brings forward a window.
@@ -74,6 +78,16 @@ def home():
     space(action="go", index=1); time.sleep(0.8)
 
 
+def press(code, ch, mods=()):
+    return sv.cmd({"do": "press", "code": code, "chars": ch, "mods": list(mods)})
+
+
+def typed(text, mods=()):
+    """Into the field, raised already or else by ⌘L, then Return."""
+    sv.cmd({"do": "field", "text": text}); time.sleep(0.4)
+    press(36, "\r", mods); time.sleep(1.5)
+
+
 def opened(url, wait=1.0):
     r = sv.sp("open", url=url)["resultID"]; time.sleep(wait); return r
 
@@ -81,7 +95,7 @@ def opened(url, wait=1.0):
 def main():
     t = sv.T()
     try:
-        sv.setup(**{"spaces": True, "spaces.links": True, "start.fresh": False})
+        sv.setup(**{"spaces": True, "spaces.links": True, "start.fresh": False, "newtab.floating": True})
         sv.launch()
         space(action="new", name="Two"); time.sleep(0.8)
         two = next(s["id"] for s in json.load(open(f"{sv.SUPPORT}/spaces.json")) if s["name"] == "Two")
@@ -89,6 +103,9 @@ def main():
         sv.quit(); time.sleep(1)
         subprocess.run(["defaults", "write", sv.SUITE, "spaces.links.rules", "-array",
                         f'{{ site = localhost; space = "{two}"; }}'], check=True)
+        # An engine on localhost, which the rule names: a search still stays.
+        subprocess.run(["defaults", "write", sv.SUITE, "search.engine", "custom"], check=True)
+        subprocess.run(["defaults", "write", sv.SUITE, "search.custom", f"{LOCAL}/find?q=%s"], check=True)
         sv.launch(); time.sleep(1)
         home()
         first = current()
@@ -120,6 +137,29 @@ def main():
         sv.cmd({"do": "tap", "id": page, "selector": "#go"}); time.sleep(2)
         t.ok("a link followed in its own tab stays in its space",
              current() == first and "/opened-same" in paths(), (current(), paths()))
+
+        # Typed into the field.
+        page = opened(f"{sv.BASE}/typed-over")
+        typed(f"{LOCAL}/typed-l")
+        t.ok("an address typed after ⌘L switches to Two", current() == "Two" and "/typed-l" in paths(), (current(), paths()))
+        home()
+        t.ok("and the tab it was typed over stays as it was",
+             "/typed-l" not in paths() and "/typed-over" in paths(), paths())
+
+        press(17, "t", ["cmd"]); time.sleep(0.5)
+        typed(f"{LOCAL}/typed-t")
+        t.ok("an address typed after ⌘T opens in Two", current() == "Two" and "/typed-t" in paths(), (current(), paths()))
+        home()
+        t.ok("no tab for it in the first space", "/typed-t" not in paths(), paths())
+
+        typed(f"{LOCAL}/typed-behind", ["cmd"])
+        t.ok("⌘Return stays where you are", current() == first and "/typed-behind" not in paths(), (current(), paths()))
+        space(action="go", index=2); time.sleep(0.8)
+        t.ok("with the tab behind in Two", "/typed-behind" in paths(), paths())
+        home()
+
+        typed("red pandas")
+        t.ok("a search stays where you are", current() == first and "/find" in paths(), (current(), paths()))
 
         # A private tab's links are never sent.
         before = sv.sp("state")
