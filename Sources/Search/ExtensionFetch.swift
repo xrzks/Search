@@ -32,8 +32,8 @@ import WebKit
 // frame's requests are WebKit's, and WebKit's own fix for them isn't in a
 // shipping macOS yet.
 //
-// `extensions.credentialedFetch` (default on, not in Settings) turns it
-// off, from the next request.
+// `extensions.credentialedFetch` (default on, Settings › Extensions › Sign-ins)
+// turns it off, from the next request.
 
 @available(macOS 15.4, *)
 @MainActor

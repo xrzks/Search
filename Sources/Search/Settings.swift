@@ -474,6 +474,7 @@ struct SettingsPanel: View {
             }
         case .extensions:
             ExtensionsPage(browser: browser)
+            groups(of: page)
         case .ai:
             if AI.shipped { AISettings(browser: browser, prefs: prefs) }
         case .whatsNew:
@@ -782,7 +783,7 @@ struct SettingsPanel: View {
         case .browsing: browsingControl(item.id)
         case .spaces: spacesControl(item.id)
         case .passwords, .privacy: keptControl(item.id)
-        case .keyboard, .about: otherControl(item.id)
+        case .keyboard, .about, .extensions: otherControl(item.id)
         default: EmptyView()
         }
     }
@@ -1173,6 +1174,7 @@ struct SettingsPanel: View {
         case "about.feedback": Pill("Send Feedback") { Links.writeFeedback() }
         case "about.notes": Pill("What's New…") { browser.lead(to: InternalPage(.notes)) }
         case "developer.local": Switch(on: $prefs.developerLocal)
+        case "extensions.fetch": Switch(on: $prefs.sendsSignIns)
         case "bench": Switch(on: $prefs.bench)
         case "agents": Switch(on: $prefs.agents)
         case "news.updates": OptInSettingsField(betaOnly: false) { _ = browser.open($0, foreground: true) }
