@@ -358,6 +358,7 @@ struct SettingsPanel: View {
             }
         case .extensions:
             ExtensionsPage(browser: browser)
+            groups(of: page)
         case .ai:
             if AI.shipped { AISettings(browser: browser, prefs: prefs) }
         default:
@@ -491,7 +492,7 @@ struct SettingsPanel: View {
         case .browsing: browsingControl(item.id)
         case .spaces: spacesControl(item.id)
         case .passwords, .privacy: keptControl(item.id)
-        case .keyboard, .about: otherControl(item.id)
+        case .keyboard, .about, .extensions: otherControl(item.id)
         default: EmptyView()
         }
     }
@@ -825,6 +826,7 @@ struct SettingsPanel: View {
         case "updates.auto": Switch(on: $prefs.installsUpdates)
         case "about.feedback": Pill("Send Feedback") { Links.writeFeedback() }
         case "about.notes": Pill("What's New…") { browser.lead(to: InternalPage(.notes)) }
+        case "extensions.fetch": Switch(on: $prefs.sendsSignIns)
         case "bench": Switch(on: $prefs.bench)
         case "agents": Switch(on: $prefs.agents)
         default: EmptyView()

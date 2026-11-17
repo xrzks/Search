@@ -91,10 +91,12 @@ enum SettingsIndex {
         .init(id: "permissions", page: .privacy, title: "Site permissions", icon: "checkmark.shield"),
         .init(id: "clear", page: .privacy, title: "Clear", icon: "trash"),
 
+        .init(id: "extensions", page: .extensions, title: "Sign-ins", icon: "person.crop.circle.badge.checkmark"),
+
         .init(id: "mouse", page: .keyboard, title: "Mouse and trackpad", icon: "computermouse"),
         .init(id: "anywhere", page: .keyboard, title: "From any app", icon: "macwindow.on.rectangle"),
 
-        .init(id: "updates", page: .about, title: "Updates", icon: "arrow.triangle.2.circlepath"),
+        .init(id: "about", page: .about, title: "Feedback and notes", icon: "text.bubble"),
         .init(id: "developer", page: .about, title: "Developer", icon: "hammer"),
 
         // Drawn by ExtensionsPage itself; here so the find field reaches it.
@@ -471,6 +473,12 @@ enum SettingsIndex {
               title: "Cookies and sign-ins", detail: "Signs you out of every site", words: ["cookies", "sign out"]),
         .init(id: "clear.cache", group: "clear", icon: "internaldrive",
               title: "Cache", detail: "Only what was fetched to draw pages", words: ["clear cache", "empty caches", "cache storage"]),
+
+        // Extensions
+        .init(id: "extensions.fetch", group: "extensions", icon: "person.crop.circle.badge.checkmark",
+              title: "Extensions send your sign-ins", detail: "An extension's requests to sites it may read carry your cookies, as in Chrome",
+              more: "Off, some extensions can't see you're signed in.",
+              keys: ["extensions.credentialedFetch"], words: ["cookies", "login", "sign in"]),
 
         // Keyboard & Mouse
         .init(id: "links.peek", group: "mouse", icon: "eye",
