@@ -290,6 +290,13 @@ extension Browser {
             completionHandler(.performDefaultHandling, nil)
             return
         }
+        // An address typed or followed as http and upgraded (see
+        // HTTPSOnly.swift): failed, so that what is asked is whether to load
+        // it over http, as it was given.
+        if tab.upgraded?.secure.host()?.lowercased() == host {
+            completionHandler(.performDefaultHandling, nil)
+            return
+        }
         // Over its own tab only, as a page's own questions are (see ask).
         ask(from: webView, show: {
             let alert = NSAlert()

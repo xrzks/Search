@@ -46,13 +46,19 @@ enum Address {
         // A local server almost never has a certificate, so https there is a
         // connection failure rather than a page. The same goes for a device
         // on the network by its name, printer.local or homeassistant.local.
-        let local = host == "localhost"
+        return URL(string: (local(host) ? "http://" : "https://") + text)
+    }
+
+    /// This Mac, a device on the network by its name, or one at a private
+    /// address: the hosts typed without https, and left as they are by
+    /// HTTPS only (see HTTPSOnly.swift).
+    static func local(_ host: String) -> Bool {
+        host == "localhost"
             || host.hasSuffix(".localhost")
             || host.hasSuffix(".local")
             || host == "127.0.0.1"
             || host == "0.0.0.0"
             || privateRange(host)
-        return URL(string: (local ? "http://" : "https://") + text)
     }
 
     /// The private ranges, where Docker and many offices put their machines.

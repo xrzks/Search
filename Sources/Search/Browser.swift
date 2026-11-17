@@ -1867,13 +1867,15 @@ final class Browser: NSObject, ObservableObject {
         }
         // The sites' icons are a list of where you have been, too, and so
         // are the searches learned from sites visited (SiteSearch.swift),
-        // what you hid on them and what you let or never let them use.
-        // Every space shares them, so they go whichever history does.
+        // what you hid on them, what you let or never let them use, and
+        // the ones you let over http. Every space shares them, so they go
+        // whichever history does.
         Favicons.shared.forgetAll()
         SiteSearch.forget()
         Shared.forgetDownloadAddresses()
         curtain.forgetAll()
         CaptureChoices.forgetAll()
+        HTTPSOnly.forgetAll()
         announce("History cleared")
     }
 
@@ -8012,6 +8014,32 @@ extension Browser: WKNavigationDelegate, WKUIDelegate {
             return
         }
 
+        // HTTPS only (see HTTPSOnly.swift): plain http goes over https, the
+        // page by loading that instead, a frame by being sent there from
+        // Search's own world, where the page's scripts can't intervene. A
+        // site whose https sends it back to http is asked about at once.
+        if scheme == "http", let frame = action.targetFrame,
+           let secure = HTTPSOnly.upgrade(url, shy: !webView.configuration.websiteDataStore.isPersistent) {
+            decisionHandler(.cancel)
+            guard frame.isMainFrame else {
+                webView.callAsyncJavaScript("location.replace(url)", arguments: ["url": secure.absoluteString],
+                                            in: frame, in: Web.world)
+                return
+            }
+            let tab = popupTab(for: webView)
+            if let tab, let upgraded = tab.upgraded, upgraded.secure.host() == secure.host() {
+                tab.upgraded = nil
+                tab.plain = url
+                tab.failure = "\(url.host() ?? "This site") sends its secure page back to http."
+                return
+            }
+            tab?.upgraded = (url, secure)
+            var request = action.request
+            request.url = secure
+            webView.load(request)
+            return
+        }
+
         // The next document gets this site's stylesheet of hidden things,
         // decided here because here is the last moment before it loads.
         if action.targetFrame?.isMainFrame ?? true, let tab = tab(for: webView) {
@@ -8899,6 +8927,7 @@ extension Browser: WKNavigationDelegate, WKUIDelegate {
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
         if websitePopup { cancelCapture() }
         popupTab(for: webView)?.popupGesture.clear()
+        popupTab(for: webView)?.upgraded = nil
         guard let tab = tab(for: webView) else {
             // A small window's page came: what failed before it is over.
             littleTab(for: webView)?.failure = nil
@@ -9027,6 +9056,19 @@ extension Browser: WKNavigationDelegate, WKUIDelegate {
         // as in Safari, while the video plays. Answered as a failure, it
         // covered the playing video with "The page didn't load".
         guard !(nsError.domain == "WebKitErrorDomain" && code == 204) else { return }
+        // An address gone to over https in place of http that didn't load
+        // over it (see HTTPSOnly.swift): asked about, with the http page
+        // offered. Not a name with no site at all, which http won't find either.
+        if let tab, let upgraded = tab.upgraded {
+            tab.upgraded = nil
+            let failing = (nsError.userInfo[NSURLErrorFailingURLErrorKey] as? URL)?.host()
+            if failing == nil || failing == upgraded.secure.host(),
+               code != NSURLErrorCannotFindHost, code != NSURLErrorDNSLookupFailed {
+                tab.plain = upgraded.plain
+                tab.failure = "\(upgraded.plain.host() ?? "This site") doesn't offer a secure connection."
+                return
+            }
+        }
         tab?.failure = message(for: code)
     }
 

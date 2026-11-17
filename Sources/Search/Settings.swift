@@ -794,7 +794,13 @@ struct SettingsPanel: View {
         case "privacy.clickIDs": Switch(on: $prefs.removesClickIDs)
         case "privacy.gpc": Switch(on: $prefs.sendsPrivacySignal)
         case "notifications.ask": Switch(on: $prefs.siteNotifications)
+        case "https.only": Switch(on: $prefs.httpsOnly)
         case "privacy.forget": Pill("Forget choices") { browser.forgetCaptureChoices() }
+        case "https.allowed":
+            Pill("Forget sites") {
+                HTTPSOnly.forgetAll()
+                browser.announce("Sites let over http forgotten")
+            }
         case "clear.history": Pill("Clear") { browser.clearHistory() }
         case "clear.cookies": Pill("Sign out of everything") { browser.clearSites() }
         case "clear.cache": Pill("Clear") { browser.clearCache() }

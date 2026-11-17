@@ -480,6 +480,11 @@ final class Preferences: ObservableObject {
     @Published var sendsSignIns: Bool {
         didSet { store.set(sendsSignIns, forKey: "extensions.credentialedFetch") }
     }
+    /// Plain http goes over https, and a site without it is asked about
+    /// first (see HTTPSOnly.swift). On unless turned off.
+    @Published var httpsOnly: Bool {
+        didSet { store.set(httpsOnly, forKey: "https.only") }
+    }
     /// Whether sites may ask for a passkey here. Off sends them to the
     /// password instead — the only thing that works in a build without
     /// Apple's browser entitlement.
@@ -1088,6 +1093,7 @@ final class Preferences: ObservableObject {
         removesClickIDs = removes
         ClickIDs.on = removes
         sendsSignIns = store.object(forKey: "extensions.credentialedFetch") as? Bool ?? true
+        httpsOnly = store.object(forKey: "https.only") as? Bool ?? true
         // Offered by default only in a build that can actually do them —
         // one with Apple's browser entitlement and its profile embedded. A
         // choice made under the other kind of build is not a choice about

@@ -406,8 +406,14 @@ final class Tab: ObservableObject, Identifiable {
     /// connection, a process that kept dying. Shown in place of the page
     /// rather than in a dialog.
     @Published var failure: String? {
-        didSet { if failure == nil { dead = false } }
+        didSet { if failure == nil { dead = false; plain = nil } }
     }
+    /// With `failure`, the http address an https one stood in for and
+    /// couldn't load: the page offers it as it is (see HTTPSOnly.swift).
+    var plain: URL?
+    /// The http address the page is on its way to over https instead, and
+    /// that https address; until it commits or fails.
+    var upgraded: (plain: URL, secure: URL)?
     /// How far down the page you are, nought to one. The tab's own pill fills
     /// with it. Kept apart from the rest of the tab (see Reading): it changes
     /// all the way down a page, and only the fill has any use for it.
