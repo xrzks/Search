@@ -1420,6 +1420,8 @@ final class Extensions: NSObject, ObservableObject {
     /// asks for more than it was installed with is asked about first. The day
     /// counts from a check that worked: one that failed (no network yet after
     /// a wake, the store down) is tried again an hour later, then less often.
+    /// A disabled one is left out, so Google isn't told of it, until the first
+    /// check after it is turned back on.
     func checkForUpdates() {
         // A browser left open for days must keep checking, even if today's check is not due.
         if updateClock == nil {
@@ -1433,7 +1435,7 @@ final class Extensions: NSObject, ObservableObject {
               Extensions.updateDue(checked: settings.object(forKey: Extensions.checkedKey) as? Date,
                                    retry: settings.object(forKey: Extensions.retryKey) as? Date, now: Date())
         else { return }
-        let items = installed.filter(\.fromStore)
+        let items = installed.filter { $0.fromStore && $0.enabled }
         guard !items.isEmpty else { return updatesChecked(failed: false) }
         updateRound = Task { [weak self] in
             guard let self else { return }
