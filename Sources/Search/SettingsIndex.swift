@@ -784,18 +784,9 @@ enum SettingsIndex {
               keys: ["launcher.little"], words: ["little arc", "little window", "small window", "quick look", "option command n"], parent: "launcher.on", advanced: true),
 
         // About
-        .init(id: "updates.version", group: "updates", icon: "arrow.down.app",
-              title: "Updates", detail: "Checked every hour on its own", words: ["version", "update"]),
-        .init(id: "updates.auto", group: "updates", icon: "arrow.triangle.2.circlepath",
-              title: "Install updates on its own", detail: "Off, Search tells you and waits for Install",
-              keys: [Updater.installKey], words: ["automatic updates"]),
-        .init(id: "updates.notice", group: "updates", icon: "arrow.down.circle",
-              title: "Show when an update is ready", detail: "\"Update ready\" and Restart at the foot of the column, or a pill by the tabs",
-              more: "Only while a new version is waiting. Its × or right-click › Hide puts it away until the next version; Restart is also in the Search menu.",
-              keys: [UpdateNotice.key], words: ["update ready", "restart to update", "update notice", "new version"], kind: .note, findOnly: true),
-        .init(id: "about.feedback", group: "updates", icon: "envelope",
+        .init(id: "about.feedback", group: "about", icon: "envelope",
               title: "Found something wrong?", detail: "Opens a draft with the version already in it", words: ["bug", "feedback", "report"]),
-        .init(id: "about.notes", group: "updates", icon: "sparkles",
+        .init(id: "about.notes", group: "about", icon: "sparkles",
               title: "What's new", detail: "Every version's notes, newest first", words: ["release notes", "changelog"]),
         // An email field each, never sent without a press (OptIn.swift).
         // Only booleans are kept, never the address.

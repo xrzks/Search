@@ -514,11 +514,10 @@ struct SearchApp: App {
                     .shortcut("history.clear")
             }
             // Search › About Search, our own window with a What's New button
-            // (About.swift); then Check for Updates…, as in any Mac app, and
-            // What's New…, this version's card again (idea 968).
+            // (About.swift); then What's New…, this version's card again
+            // (idea 968).
             CommandGroup(replacing: .appInfo) {
                 Button("About Search") { AboutWindow.show() }
-                UpdateMenuItem()
                 Button("What's New…") { WhatsNew.showAgain(in: browser) }
                     .disabled(WhatsNew.current == nil)
             }
@@ -2423,32 +2422,6 @@ private struct TabImmersionWatch: View {
         // window works out from it at once must read the new value.
         Color.clear.frame(width: 0, height: 0)
             .onReceive(tab.immersion) { _ in changed() }
-    }
-}
-
-/// The update command, as the updater stands: Check for Updates…, Install
-/// Update when installing on its own is off, Download Update… when it
-/// couldn't install itself, Restart to Update once a newer build is in place.
-/// Its own view, so only the updater's changes redraw it (see SearchApp.body).
-private struct UpdateMenuItem: View {
-    @ObservedObject private var updater = Updater.shared
-
-    var body: some View {
-        switch updater.stage {
-        case .none:
-            Button(updater.checking ? "Checking for Updates…" : "Check for Updates…") { updater.checkByHand() }
-                .disabled(updater.checking)
-        case .waiting:
-            Button("Install Update") { updater.install() }
-        case .fetching:
-            Button("Downloading Update…") {}
-                .disabled(true)
-        case .ready:
-            Button("Restart to Update") { updater.relaunch() }
-        case .offered:
-            Button(updater.fetchingDisk ? "Downloading Update…" : "Download Update…") { updater.openDisk() }
-                .disabled(updater.fetchingDisk)
-        }
     }
 }
 

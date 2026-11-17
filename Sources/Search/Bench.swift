@@ -5523,35 +5523,6 @@ final class Bench {
                 ])
             }
 
-        case "update":
-            // The updater, for a test run pointed at its own feed: `check`
-            // is the menu's Check for Updates…, `disk` the Download button.
-            guard Store.testing else { answer(["error": "update only works on a --test run"]); return }
-            let updater = Updater.shared
-            switch request["action"] as? String {
-            case "check": updater.checkByHand()
-            case "disk": updater.openDisk()
-            case "stage":
-                // The notice's stage as told (UpdateNotice): "ready" or
-                // "waiting" with a build, or "none".
-                let build = request["build"] as? Int ?? Updater.build + 1
-                let release = Updater.Release(version: "test \(build)", build: build,
-                                              archive: URL(fileURLWithPath: "/dev/null"), dmg: URL(fileURLWithPath: "/dev/null"),
-                                              sha256: nil, notes: nil, minimumSystemVersion: nil)
-                switch request["to"] as? String {
-                case "ready": updater.setStageForTest(.ready(release))
-                case "waiting": updater.setStageForTest(.waiting(release))
-                case "offered": updater.setStageForTest(.offered(release))
-                case "fetching": updater.setStageForTest(.fetching(release))
-                default: updater.setStageForTest(.none)
-                }
-            default: break
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                answer(["stage": String(describing: updater.stage), "checking": updater.checking,
-                        "disk": Updater.diskVerdict, "fetchingDisk": updater.fetchingDisk])
-            }
-
         case "consent":
             // The mark the Settings switch leaves (see Consent), in this test
             // world's own account: given, then granted or revoked if asked.
@@ -6603,9 +6574,9 @@ final class Bench {
 
         default:
             answer(["error": "unknown command “\(verb)”", "commands": [
-                "tabs", "open", "go", "openmark", "tiles", "close", "wait", "sleep", "select", "text", "nowplaying", "agent", "kept", "eval", "picturemenu", "click", "type", "submit", "shot", "snap", "probe", "key", "textcheck", "resize", "hit", "pointer", "film", "float", "window", "pages", "picture", "pdf", "place", "group", "tospace", "field", "bookmark", "marks", "menu", "keyeq", "fill", "pin", "middle", "windows", "alive", "quit", "towindow", "news", "pull", "magnify", "wheel", "notches", "space", "split", "strip", "column", "fold", "consent", "devtools", "update", "site", "little", "ui", "import", "import-preview", "import-file", "import-file-start", "import-file-status", "import-file-cancel", "remove-folder", "passwords", "accounts", "find", "answer", "visible", "seam", "ai", "notifications", "popups", "suggest", "translate", "profile", "settings",
+                "tabs", "open", "go", "openmark", "tiles", "close", "wait", "sleep", "select", "text", "nowplaying", "agent", "kept", "eval", "picturemenu", "click", "type", "submit", "shot", "snap", "probe", "key", "textcheck", "resize", "hit", "pointer", "film", "float", "window", "pages", "picture", "pdf", "place", "group", "tospace", "field", "bookmark", "marks", "menu", "keyeq", "fill", "pin", "middle", "windows", "alive", "quit", "towindow", "news", "pull", "magnify", "wheel", "notches", "space", "split", "strip", "column", "fold", "consent", "devtools", "site", "little", "ui", "import", "import-preview", "import-file", "import-file-start", "import-file-status", "import-file-cancel", "remove-folder", "passwords", "accounts", "find", "answer", "visible", "seam", "ai", "notifications", "popups", "suggest", "translate", "profile", "settings",
 
-                "tabs", "open", "go", "openmark", "tiles", "close", "wait", "sleep", "select", "text", "nowplaying", "player", "agent", "eval", "click", "type", "submit", "shot", "snap", "probe", "key", "textcheck", "resize", "hit", "pointer", "film", "float", "window", "pages", "picture", "pdf", "place", "group", "tospace", "field", "bookmark", "marks", "menu", "keyeq", "fill", "pin", "middle", "windows", "alive", "quit", "towindow", "news", "pull", "magnify", "wheel", "notches", "space", "split", "strip", "column", "fold", "consent", "devtools", "update", "site", "little", "ui", "import", "import-preview", "import-file", "import-file-start", "import-file-status", "import-file-cancel", "remove-folder", "passwords", "accounts", "find", "answer", "visible", "seam", "ai", "notifications", "popups", "suggest", "translate", "profile", "settings",
+                "tabs", "open", "go", "openmark", "tiles", "close", "wait", "sleep", "select", "text", "nowplaying", "player", "agent", "eval", "click", "type", "submit", "shot", "snap", "probe", "key", "textcheck", "resize", "hit", "pointer", "film", "float", "window", "pages", "picture", "pdf", "place", "group", "tospace", "field", "bookmark", "marks", "menu", "keyeq", "fill", "pin", "middle", "windows", "alive", "quit", "towindow", "news", "pull", "magnify", "wheel", "notches", "space", "split", "strip", "column", "fold", "consent", "devtools", "site", "little", "ui", "import", "import-preview", "import-file", "import-file-start", "import-file-status", "import-file-cancel", "remove-folder", "passwords", "accounts", "find", "answer", "visible", "seam", "ai", "notifications", "popups", "suggest", "translate", "profile", "settings",
             ]])
         }
     }

@@ -94,7 +94,7 @@ final class DefaultsOnTests: XCTestCase {
     static let retiredOn = ["tabs.undoReopens", "video.keys", "tabs.popupWindows", "tabs.frontBeside", "tabs.swipeBackCloses",
                             "reader.follows", "pages.capture", "sites.styles", "home.grid", Motion.lightKey, "float.minimize",
                             "pins.folders", "commandbar", "sidebar.player", "tabs.pinCounts", "tabs.newAfterLast",
-                            "meet.pip", "pins.preview", "swipe.history", UpdateNotice.key, "pins.home", "pins.peek",
+                            "meet.pip", "pins.preview", "swipe.history", "pins.home", "pins.peek",
                             // Off until 27 Nov 2026, on for everyone since.
                             "sidebar.narrowIcons", "newtab.recent"]
     static let retiredOff = ["tabs.reading", "tabs.give", "reader.twins", "field.hidesPage", "tabs.clickAddressOnly", "pages.bounce"]
@@ -120,7 +120,7 @@ final class DefaultsOnTests: XCTestCase {
             XCTAssertTrue(prefs.lightMotion && prefs.floatMinimizes && Float.minimizes && prefs.pinFolders, said)
             XCTAssertTrue(prefs.commandBar && prefs.showsPlayer && prefs.showsPinCounts && prefs.newTabAfterLast, said)
             XCTAssertTrue(prefs.meetPiP && MeetPiP.on && prefs.pinPreviews && prefs.holdsHistory && PageView.holdsHistory, said)
-            XCTAssertTrue(prefs.showsUpdateReady && prefs.pinsKeepSite && prefs.pinsGoHome && prefs.pinsPeek, said)
+            XCTAssertTrue(prefs.pinsKeepSite && prefs.pinsGoHome && prefs.pinsPeek, said)
             XCTAssertTrue(prefs.narrowsToIcons && prefs.recentInNewTab, said)
             XCTAssertFalse(prefs.showsReading || prefs.tabsGive || prefs.readsTwins || prefs.fieldHidesPage
                            || prefs.tabClickAddressOnly || prefs.bounces || Swipe.bounces, said)

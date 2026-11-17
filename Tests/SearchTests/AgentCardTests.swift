@@ -4,8 +4,9 @@ import XCTest
 @testable import Search
 
 /// A coding agent's card at the column's foot and its pill in the strip
-/// (AgentBanner), drawn as "Update ready" is: its name never cut at the
-/// narrowest column, the two cards stacked, and no Stop on the tab's row.
+/// (AgentBanner): its name never cut at the narrowest column, and no Stop
+/// on the tab's row. (Upstream also draws it stacked with "Update ready",
+/// which this fork, with no updater, never shows.)
 /// Drawn in borderless windows far off every screen, never activated.
 /// SEARCH_RENDER_DIR, when set, keeps every picture there as a PNG.
 @MainActor
@@ -24,7 +25,6 @@ final class AgentCardTests: XCTestCase {
         for browser in browsers { browser.closeAll() }
         restore?()
         AgentControl.shared.showForTest(nil)
-        Updater.shared.setStageForTest(.none)
         windows.removeAll()
         browsers.removeAll()
         try await Task.sleep(for: .milliseconds(200))
@@ -46,17 +46,15 @@ final class AgentCardTests: XCTestCase {
     func testDrawn() async throws {
         _ = NSApplication.shared
         let prefs = Shared.prefs
-        let before = (prefs.sidebar, prefs.glass, prefs.showsUpdateReady, prefs.updateHiddenBuild, prefs.sideHides,
+        let before = (prefs.sidebar, prefs.glass, prefs.sideHides,
                       prefs.sidePosition, prefs.sideWidth)
         restore = {
-            (prefs.sidebar, prefs.glass, prefs.showsUpdateReady, prefs.updateHiddenBuild, prefs.sideHides,
+            (prefs.sidebar, prefs.glass, prefs.sideHides,
              prefs.sidePosition, prefs.sideWidth) = before
         }
         prefs.sideHides = false
         prefs.sidePosition = .left
-        prefs.showsUpdateReady = true
-        prefs.updateHiddenBuild = 0
-        let updater = Updater.shared, agents = AgentControl.shared
+        let agents = AgentControl.shared
 
         let browser = Browser(record: WindowRecord())
         browsers.append(browser)
@@ -76,7 +74,6 @@ final class AgentCardTests: XCTestCase {
                     prefs.sideWidth = width
                     let name = "column-\(Int(width))-\(look)"
                     let column = try show(Column(browser: browser, prefs: prefs), width: width, height: 360, dark: dark)
-                    updater.setStageForTest(.none)
                     agents.showForTest(nil)
                     let none = try await picture(column, nil)
                     agents.showForTest("Claude Code", in: browser)
@@ -87,37 +84,25 @@ final class AgentCardTests: XCTestCase {
                     _ = try await picture(column, "\(name)-agent-idle")
                     agents.showForTest("Claude Code", in: browser, auto: true)
                     _ = try await picture(column, "\(name)-agent-always")
-                    agents.showForTest("Claude Code", in: browser)
-                    updater.setStageForTest(.ready(release(700)))
-                    let both = try await picture(column, "\(name)-both")
-                    XCTAssertGreaterThan(differs(card, both, rows: 360 - 36 - 80..<(360 - 36)), 40, "\(name): both")
                     close(column)
                 }
 
                 prefs.sidebar = false
                 let strip = try show(Strip(browser: browser, prefs: prefs), width: 900, height: Metrics.strip, dark: dark)
-                updater.setStageForTest(.none)
                 agents.showForTest(nil)
                 let top = try await picture(strip, nil)
                 agents.showForTest("Claude Code", in: browser)
                 let pill = try await picture(strip, "strip-agent-\(look)")
                 XCTAssertGreaterThan(differs(top, pill), 40, "\(look): the pill")
                 XCTAssertNotNil(agents.stopButton?.window, "\(look): Stop in the strip")
-                updater.setStageForTest(.ready(release(700)))
-                _ = try await picture(strip, "strip-both-\(look)")
                 agents.showForTest("Claude Code", in: browser, auto: true)
-                _ = try await picture(strip, "strip-both-always-\(look)")
+                _ = try await picture(strip, "strip-agent-always-\(look)")
                 close(strip)
             }
         }
     }
 
     // MARK: - drawing
-
-    private func release(_ build: Int) -> Updater.Release {
-        Updater.Release(version: "9.\(build)", build: build, archive: URL(fileURLWithPath: "/dev/null"),
-                        dmg: URL(fileURLWithPath: "/dev/null"), sha256: nil, notes: nil, minimumSystemVersion: nil)
-    }
 
     private struct Column: View {
         let browser: Browser

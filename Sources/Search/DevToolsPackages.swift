@@ -859,9 +859,9 @@ struct DevToolsPackageList: View {
                 }
             }
         case .removedLoaded:
-            Line(offer.name, "Removed. Restart Search to unload it.") { Pill("Restart") { Updater.shared.relaunch() } }
+            Line(offer.name, "Removed. Restart Search to unload it.") { Pill("Restart") { Updater.relaunch() } }
         case .updatedLoaded:
-            Line(offer.name, "Updated. Restart Search to use the new version.") { Pill("Restart") { Updater.shared.relaunch() } }
+            Line(offer.name, "Updated. Restart Search to use the new version.") { Pill("Restart") { Updater.relaunch() } }
         case .idle:
             Line(offer.name + (installed.map { " \($0.offer.display)" } ?? ""), "\(offer.summary)\(adds)\n\(version)") {
                 HStack(spacing: 6) {
