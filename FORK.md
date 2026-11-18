@@ -148,14 +148,15 @@ goes to the Bin first. Once only, marked by `identity.carried`. Caches stay
 behind. macOS's own choices are per identifier and don't follow: Search has to
 be chosen as the default browser again, and camera, microphone, location and
 Contacts are asked about again. Keychain services are named after the new
-identifier (AI keys, the proxy password, the bench's mark); none of these could
-be kept by an ad-hoc build before either. Test worlds keep their
-`com.officecommun.search.test.*` suites. `Search.passkeys.entitlements` still
-names upstream's team and identifier; it is only used with upstream's
+identifier (AI keys, the proxy password, the bench's and the agents' marks);
+none of these could be kept by an ad-hoc build before either. Test worlds keep
+their `com.officecommun.search.test.*` suites. `Search.passkeys.entitlements`
+still names upstream's team and identifier; it is only used with upstream's
 provisioning profile, which the fork doesn't have. `Identity.swift` (new),
 `App.swift`, `Store.swift` (`folder`, `ownContainer`), `AI.swift`,
-`Proxy.swift`, `Bench.swift`, `build.sh` (`BUNDLE_ID`), `fresh.sh`, `bench-mcp`,
-`Tests/bench_mcp.py`, `Tests/split_view.py`
+`Proxy.swift`, `Bench.swift`, `Prefs.swift` (`agentsMark`), `build.sh`
+(`BUNDLE_ID`), `fresh.sh`, `bench-mcp`, `Tests/bench_mcp.py`,
+`Tests/split_view.py`
 
 **No "On this Mac" AI** (2026-11-18). The AI add-on's own model ran in an engine
 upstream's feed offered, signed by Office Commun's team and checked against it;
@@ -256,10 +257,11 @@ appearance changes. `Theme.swift` (new), `Design.swift`, `Prefs.swift`,
 - _Ephemeral session._ `ProxyNetwork.session` is built on
   `URLSessionConfiguration.ephemeral`: the browser's own requests, the Web
   Store's among them, keep no cookies or cache on disk. `Proxy.swift`
-- _The bench fails closed._ `Bench.Consent.given` counts only a keychain mark as
+- _Switches fail closed._ `SwitchMark.given` counts only a keychain mark as
   consent, not `errSecMissingEntitlement`. A build without Search's provisioning
-  profile can't leave the mark, so the bench is off at every launch outside test
-  runs, which don't read it. `Bench.swift`
+  profile can't leave the mark, so the bench, and Let coding agents use Search,
+  are off at every launch outside test runs, which don't read it.
+  `PageHands.swift` (`SwitchMark`)
 - _Documentation._ The proxy's help text in Settings says macOS's own services
   (translation model downloads, location, certificate checks, Safe Browsing's
   fraud warnings) don't go through it; it already named WebRTC over UDP, and
