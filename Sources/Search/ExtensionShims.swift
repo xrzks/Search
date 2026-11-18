@@ -59,7 +59,7 @@ enum ExtensionShims {
     /// extensions prepared before are prepared again.
     nonisolated private static let preparation = "8"
     nonisolated static let version: String = {
-        SHA256.hash(data: Data((script + PasskeyRelay.page + preparation).utf8)).prefix(8).map { String(format: "%02x", $0) }.joined() + (Store.testing ? "-test" : "")
+        SHA256.hash(data: Data((script + PasskeyRelay.page + ExtensionBuiltIns.script + preparation).utf8)).prefix(8).map { String(format: "%02x", $0) }.joined() + (Store.testing ? "-test" : "")
     }()
 
     /// Chrome's least for a Manifest V3 extension's own pages, whatever its
@@ -290,15 +290,26 @@ enum ExtensionShims {
         // otherwise: Backpack's Unicode regexes break on a windows-1252
         // page. A UTF-8 signature keeps the script's text independent of
         // the page without changing the page's own encoding or scripts.
+        //
+        // Customized built-in elements are looked for on the way: one file
+        // using them gives every page the polyfill (ExtensionBuiltIns), as a
+        // page may load the fragment or the script that does.
         let signature = Data([0xEF, 0xBB, 0xBF])
+        let ours: Set<String> = [file, contentFile, passkeys, ExtensionBuiltIns.file]
+        var builtIns = false
+        var pages: [(url: URL, html: String)] = []
         let walker = files.enumerator(at: folder, includingPropertiesForKeys: [.isSymbolicLinkKey, .isRegularFileKey])
         while let url = walker?.nextObject() as? URL {
             guard (try? url.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true,
                   inside(String(url.path.dropFirst(folder.path.count)), of: folder) != nil
             else { continue }
             if ["js", "mjs"].contains(url.pathExtension.lowercased()) {
-                guard let bytes = try? Data(contentsOf: url),
-                      !bytes.starts(with: signature), bytes.contains(where: { $0 >= 0x80 }),
+                guard let bytes = try? Data(contentsOf: url) else { continue }
+                if !builtIns, !ours.contains(url.lastPathComponent), bytes.range(of: Data("extends".utf8)) != nil,
+                   let text = String(data: bytes, encoding: .utf8), ExtensionBuiltIns.used(in: text, html: false) {
+                    builtIns = true
+                }
+                guard !bytes.starts(with: signature), bytes.contains(where: { $0 >= 0x80 }),
                       String(data: bytes, encoding: .utf8) != nil,
                       // A hashbang must stay at the very first character.
                       !bytes.starts(with: [0x23, 0x21])
@@ -319,9 +330,16 @@ enum ExtensionShims {
             var html = page.hasPrefix("\u{FEFF}") || !bytes.starts(with: signature) ? page : "\u{FEFF}" + page
             if let chained = chainModules(html, page: url, folder: folder) { html = chained }
             html = withShim(html)
+            if !builtIns, ExtensionBuiltIns.used(in: html, html: true) { builtIns = true }
+            pages.append((url, html))
             let written = Data(html.utf8)
             guard written != bytes else { continue }
             try? written.write(to: url, options: .atomic)
+        }
+        if builtIns, (try? ExtensionBuiltIns.script.write(to: folder.appendingPathComponent(ExtensionBuiltIns.file), atomically: true, encoding: .utf8)) != nil {
+            for page in pages {
+                if let named = ExtensionBuiltIns.named(in: page.html) { try? named.write(to: page.url, atomically: true, encoding: .utf8) }
+            }
         }
     }
 

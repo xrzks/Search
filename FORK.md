@@ -31,6 +31,24 @@ came from, or nothing, not the whole address of the page.
 
 Newest first. Each entry: what changed, why, and the files it touches.
 
+**Extension pages with customized built-ins** (2026-11-18). An extension
+page may make a `<button>` or an `<input>` one of its own elements, written
+`<button is="select-button">` and defined with `customElements.define(…, {
+extends: "button" })`. Chrome has these; WebKit doesn't, and the element
+stays a plain one with nothing in it. YT Tweaks' options page, the same Web
+Store package as in Chrome, showed its theme menus as empty rows that did
+nothing when clicked, and its search field as a bare white box. Now, when an
+extension is prepared, a page with an element marked `is`, or a script that
+defines one with `extends`, gives every page of that extension
+@ungap/custom-elements 1.3.0 (ISC, its notice kept), written beside the shim
+as `search-builtins.js` and named right after it, so it runs before the
+page's own scripts. An extension that uses none doesn't carry it, as it puts
+its own class in place of every `HTML…Element` a page sees. The preparation
+is raised to 7, so installed extensions are prepared again at the next
+launch. `ExtensionBuiltIns.swift` (new), `ExtensionShims.swift` (`prepare`,
+`version`), `Tests/SearchTests/ExtensionBuiltInsTests.swift` (new),
+`Tests/extension_builtins.py` (new)
+
 **Site search after an @** (2026-11-18). Typing the start of a site's name
 offered that site's search, and a word from Site shortcuts sent what followed
 to its site, so "red" or "yt cats" never reached the engine as typed. Both now
