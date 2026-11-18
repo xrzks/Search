@@ -51,9 +51,9 @@ enum ExtensionShims {
     nonisolated static let stamp = ".search-shim"
     /// Raised when `prepare` changes what it does to a package, so that
     /// extensions prepared before are prepared again.
-    nonisolated private static let preparation = "6"
+    nonisolated private static let preparation = "7"
     nonisolated static let version: String = {
-        SHA256.hash(data: Data((script + PasskeyRelay.page + preparation).utf8)).prefix(8).map { String(format: "%02x", $0) }.joined() + (Store.testing ? "-test" : "")
+        SHA256.hash(data: Data((script + PasskeyRelay.page + ExtensionBuiltIns.script + preparation).utf8)).prefix(8).map { String(format: "%02x", $0) }.joined() + (Store.testing ? "-test" : "")
     }()
 
     /// `fresh`: a package just unpacked or copied in. What only Search writes
@@ -237,15 +237,26 @@ enum ExtensionShims {
         // otherwise: Backpack's Unicode regexes break on a windows-1252
         // page. A UTF-8 signature keeps the script's text independent of
         // the page without changing the page's own encoding or scripts.
+        //
+        // Customized built-in elements are looked for on the way: one file
+        // using them gives every page the polyfill (ExtensionBuiltIns), as a
+        // page may load the fragment or the script that does.
         let signature = Data([0xEF, 0xBB, 0xBF])
+        let ours: Set<String> = [file, contentFile, passkeys, ExtensionBuiltIns.file]
+        var builtIns = false
+        var pages: [(url: URL, html: String)] = []
         let walker = files.enumerator(at: folder, includingPropertiesForKeys: [.isSymbolicLinkKey, .isRegularFileKey])
         while let url = walker?.nextObject() as? URL {
             guard (try? url.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true,
                   inside(String(url.path.dropFirst(folder.path.count)), of: folder) != nil
             else { continue }
             if ["js", "mjs"].contains(url.pathExtension.lowercased()) {
-                guard let bytes = try? Data(contentsOf: url),
-                      !bytes.starts(with: signature), bytes.contains(where: { $0 >= 0x80 }),
+                guard let bytes = try? Data(contentsOf: url) else { continue }
+                if !builtIns, !ours.contains(url.lastPathComponent), bytes.range(of: Data("extends".utf8)) != nil,
+                   let text = String(data: bytes, encoding: .utf8), ExtensionBuiltIns.used(in: text, html: false) {
+                    builtIns = true
+                }
+                guard !bytes.starts(with: signature), bytes.contains(where: { $0 >= 0x80 }),
                       String(data: bytes, encoding: .utf8) != nil,
                       // A hashbang must stay at the very first character.
                       !bytes.starts(with: [0x23, 0x21])
@@ -263,6 +274,8 @@ enum ExtensionShims {
                 html = chained
                 try? html.write(to: url, atomically: true, encoding: .utf8)
             }
+            if !builtIns, ExtensionBuiltIns.used(in: html, html: true) { builtIns = true }
+            defer { pages.append((url, html)) }
             guard !html.contains(file) else { continue }
             let tag = "<script src=\"/\(file)\"></script>"
             if let head = html.range(of: "<head[^>]*>", options: [.regularExpression, .caseInsensitive]) {
@@ -271,6 +284,11 @@ enum ExtensionShims {
                 html = tag + html
             }
             try? html.write(to: url, atomically: true, encoding: .utf8)
+        }
+        if builtIns, (try? ExtensionBuiltIns.script.write(to: folder.appendingPathComponent(ExtensionBuiltIns.file), atomically: true, encoding: .utf8)) != nil {
+            for page in pages {
+                if let named = ExtensionBuiltIns.named(in: page.html) { try? named.write(to: page.url, atomically: true, encoding: .utf8) }
+            }
         }
     }
 
