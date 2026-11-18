@@ -107,7 +107,7 @@ enum SettingsIndex {
         .init(id: "mouse", page: .keyboard, title: "Mouse and trackpad", icon: "computermouse"),
         .init(id: "anywhere", page: .keyboard, title: "From any app", icon: "macwindow.on.rectangle"),
 
-        .init(id: "about", page: .about, title: "Feedback and notes", icon: "text.bubble"),
+        .init(id: "about", page: .about, title: "Notes", icon: "text.bubble"),
         .init(id: "news", page: .about, title: "News by email", icon: "envelope.open"),
         .init(id: "developer", page: .about, title: "Developer", icon: "hammer"),
 
@@ -801,8 +801,6 @@ enum SettingsIndex {
               keys: ["launcher.little"], words: ["little arc", "little window", "small window", "quick look", "option command n"], parent: "launcher.on", advanced: true),
 
         // About
-        .init(id: "about.feedback", group: "about", icon: "envelope",
-              title: "Found something wrong?", detail: "Opens a draft with the version already in it", words: ["bug", "feedback", "report"]),
         .init(id: "about.notes", group: "about", icon: "sparkles",
               title: "What's new", detail: "Every version's notes, newest first", words: ["release notes", "changelog"]),
         // An email field each, never sent without a press (OptIn.swift).

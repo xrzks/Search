@@ -28,6 +28,19 @@ long as it runs. Maybe, later: forget a site when its last tab closes as well.
 
 Newest first. Each entry: what changed, why, and the files it touches.
 
+**Less Office Commun** (2026-11-18). The fork keeps the name Search, but two
+things still pointed at Office Commun. The AI sign-in's callback, which Search
+takes before it loads, was on `officecommun.com`; it is now
+`https://xrzks.github.io/Search/ai/callback`, on the fork's own GitHub Pages
+host, where nothing is served. OpenRouter takes the address with each sign-in,
+not from a list kept with it, so nothing there had to change. Send Feedback
+drafted a mail to Office Commun about a build they didn't make; it is switched
+off rather than removed: gone from the Help menu, which is left empty, from
+Settings › About, whose group is now Notes, and from Settings' search.
+`Links.writeFeedback` is left in place, unused, so merges from upstream stay
+simple. `AISignIn.swift` (`callback`), `App.swift` (`QuitAndHelp`),
+`Settings.swift`, `SettingsIndex.swift`, `Links.swift`
+
 **Forget sites between launches** (2026-11-18). Sites you only pass through
 kept their cookies, storage and cache until you cleared them, and Clear's
 Cookies and sign-ins clears every site at once, signing you out of

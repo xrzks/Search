@@ -547,8 +547,9 @@ private struct QuitAndHelp: Commands {
             }
             .keyboardShortcut("q", modifiers: .command)
         }
+        // Upstream's Send Feedback wrote to Office Commun about a build they
+        // didn't make; the fork leaves it out of the Help menu.
         CommandGroup(replacing: .help) {
-            Button("Send Feedback…") { Links.writeFeedback() }
             // For now, until the iPhone beta opens (IPhoneAsk.swift).
             if iphoneAsk {
                 Button(IPhoneAsk.menuTitle) { Browsers.frontBrowser.iphoneAsking = true }
