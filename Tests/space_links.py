@@ -21,7 +21,9 @@ localhost on the same port. Checked:
   else in the first space): a link from another app, an address typed, a
   target=_blank click from a localhost page; a ⌘-click opens it in the first
   space's row, and a target=_blank link within 127.0.0.1's own site stays;
-- the same links from a private tab stay in the first space.
+- the same links from a private tab stay in the first space;
+- a page opened into a space with nothing open, in front or behind, takes
+  the place of its empty tab.
 
 Nothing here makes, shows or brings forward a window.
 """
@@ -52,6 +54,8 @@ class H(BaseHTTPRequestHandler):
             body = f'<a id="go" href="{LOCAL}/opened-cmd" {LINK}>link</a>'
         elif page == "/same":
             body = f'<a id="go" href="{LOCAL}/opened-same" {LINK}>link</a>'
+        elif page == "/to-first":
+            body = f'<a id="go" target="_blank" href="{sv.BASE}/into-first" {LINK}>link</a>'
         elif page == "/to-rest":
             body = f'<a id="go" target="_blank" href="{sv.BASE}/opened-rest" {LINK}>link</a>'
         elif page == "/to-rest-cmd":
@@ -126,6 +130,22 @@ def main():
         home()
         first = current()
         t.ok("in the first space to begin with", first != "Two", first)
+
+        # A space with nothing open shows an empty tab, which the first page
+        # opened there replaces.
+        t.ok("the first space has only its empty tab", paths() == [""], paths())
+        over()
+        t.ok("Two has only its empty tab", paths() == [""], paths())
+        home()
+        typed(f"{LOCAL}/into-empty", ["cmd"])
+        over()
+        t.ok("a page opened behind into an empty space takes its empty tab's place",
+             paths() == ["/into-empty"], paths())
+        page = opened(f"{LOCAL}/to-first")
+        sv.cmd({"do": "tap", "id": page, "selector": "#go"}); time.sleep(2)
+        t.ok("a page opened in front into an empty space takes its empty tab's place",
+             current() == first and paths() == ["/into-first"], (current(), paths()))
+        home()
 
         # From another app.
         link(f"{LOCAL}/ext"); time.sleep(1.5)

@@ -3087,6 +3087,21 @@ final class Browser: NSObject, ObservableObject {
         }
     }
 
+    /// The empty tabs of a row with nothing open but its pins: what a page
+    /// opened into the row takes the place of. None once the row has a page,
+    /// or while one of them is private, a pair's, in the float, or holds
+    /// something typed (`typing`: the tab on screen, whose field is `typed`).
+    func loneBlanks(in row: [Tab], splits: [TabSplit], typing: Tab.ID?) -> [Tab] {
+        let blanks = row.filter { $0.pin == nil }
+        guard !blanks.isEmpty, blanks.allSatisfy(\.isBlank) else { return [] }
+        let used = blanks.contains { blank in
+            blank.shy || blank.bench || blank.floating || !blank.draft.isEmpty
+                || splits.contains { $0.contains(blank.id) }
+                || (blank.id == typing && !typed.isEmpty)
+        }
+        return used ? [] : blanks
+    }
+
     /// An empty tab at the end of the row, in front: a row with nothing in
     /// front (a fresh start, see Session.startFresh) opens on one, beside its
     /// pins, rather than on the first of them.
@@ -6078,6 +6093,7 @@ final class Browser: NSObject, ObservableObject {
         let joins = prefs.usesTabGroups && !loose && !tab.shy && !tab.bench
         if joins, let source { tab.groupID = source.groupID }
         let apart = loose && prefs.usesTabGroups && source.map { group(of: $0) != nil } == true
+        let lone = loneBlanks(in: tabs, splits: splits, typing: activeID)
         tabs.insert(tab, at: atEnd ? tabs.count : link ? placeForLink(from: source) : apart ? placeForFront() : placeForNew())
         if link, !atEnd, !foreground || frontLinksBeside { noteLink(tab, from: source) }
         if mayWait, !foreground, prefs.lazyTabs, page == nil {
@@ -6090,6 +6106,17 @@ final class Browser: NSObject, ObservableObject {
             activeID = tab.id
             editing = false
             typed = ""
+        }
+        // The empty tab of a space with nothing open makes way for it, in
+        // front or not: the space has nothing else to show.
+        if !lone.isEmpty {
+            if lone.contains(where: { $0.id == activeID }) {
+                activeID = tab.id
+                editing = false
+                typed = ""
+                if tab.asleep { _ = tab.wake() }
+            }
+            for blank in lone { tabs.removeAll { $0 === blank }; blank.close() }
         }
         return tab
     }
