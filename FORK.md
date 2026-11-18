@@ -27,10 +27,6 @@ long as it runs. Maybe, later: forget a site when its last tab closes as well.
 **A shorter Referer.** A request to another site carries only the origin it
 came from, or nothing, not the whole address of the page.
 
-**Global Privacy Control.** Every request sends `Sec-GPC: 1` and pages see
-`navigator.globalPrivacyControl`, on by default, so a site that honours it
-treats you as having opted out of sale and sharing.
-
 ## Changes from upstream
 
 Newest first. Each entry: what changed, why, and the files it touches.
