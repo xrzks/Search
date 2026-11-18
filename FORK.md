@@ -48,6 +48,11 @@ takes it off. A private tab's card leaves it out, since nothing is kept there.
 
 Newest first. Each entry: what changed, why, and the files it touches.
 
+**No new tab row in the sidebar** (2026-11-18). The "New tab" row under the
+loose tabs, and the plus that stood in for it in the column of icons, is gone,
+with `Quiet`, the view it was drawn with; the list ends at its last tab. ⌘T and
+File › New Tab still open one. `Side.swift`
+
 **The fork's own front page** (2026-11-18). GitHub shows `.github/README.md` in
 place of the root `README.md` when there is one, and upstream has none, so the
 fork's page on GitHub says what it is without touching upstream's README: a
@@ -167,7 +172,8 @@ with the pages held where they are, since a colour is only asked again when the
 appearance changes. `Theme.swift` (new), `Design.swift`, `Prefs.swift`,
 `Settings.swift`, `SettingsIndex.swift`, `Reader.swift`, `Inspector.swift`,
 `Browser.swift`, `Spaces.swift`, `Peek.swift`, `MeCard.swift`, `Windows.swift`,
-`Bench.swift` (`colours` in `ui` and `probe`)
+`Bench.swift` (`colours` in `ui` and `probe`),
+`Tests/SearchTests/FollowFileTests.swift`
 
 **Fixes from the review** (2026-11-17). What the privacy review found.
 
@@ -181,13 +187,14 @@ appearance changes. `Theme.swift` (new), `Design.swift`, `Prefs.swift`,
   upstream's DMG in its place. The check, download and swap-in are gone, with
   the Check for Updates… menu item, the Updates rows in Settings › About and the
   bench's `update` command; the fork is updated by rebuilding. `Updater.swift`
-  keeps only the version, build, team and Developer ID requirement other files
-  read. Upstream's `README.md` and `SECURITY.md` still describe the updater,
-  left as they are so merges stay clean. `Updater.swift`, `App.swift`,
-  `Browser.swift`, `Prefs.swift`, `Settings.swift`, `SettingsIndex.swift`,
-  `Bench.swift`, `Welcome.swift`, `Links.swift`, `AIEngine.swift` (comments),
-  `bench-mcp`, `Tests/SearchTests/VaultAndUpdaterTests.swift`,
-  `Tests/bench_mcp.py`, `Tests/settings_layout.py`
+  keeps only the version and build other files read (the team and Developer ID
+  requirement it also kept went with the On this Mac AI). Upstream's `README.md`
+  and `SECURITY.md` still describe the updater, left as they are so merges stay
+  clean. `Updater.swift`, `App.swift`, `Browser.swift`, `Prefs.swift`,
+  `Settings.swift`, `SettingsIndex.swift`, `Bench.swift`, `Welcome.swift`,
+  `Links.swift`, `AIEngine.swift` (comments), `bench-mcp`,
+  `Tests/SearchTests/VaultAndUpdaterTests.swift`, `Tests/bench_mcp.py`,
+  `Tests/settings_layout.py`
 - _DuckDuckGo by default._ `Engine.standard` is DuckDuckGo, so it is both the
   default and where an invalid custom template falls back to. `Engine.swift`,
   `Settings.swift`
