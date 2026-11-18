@@ -56,6 +56,15 @@ through for as long as it runs.
 
 Newest first. Each entry: what changed, why, and the files it touches.
 
+**A space's empty tab makes way** (2026-11-18). A space with nothing open shows
+an empty tab beside its pins, and a page opened there, in front or behind,
+opened beside it and left it standing. Now the page takes its place: from a
+link, a page, Send links to a space or anything else that opens a tab, in the
+row on screen or in a space's row out of sight. It stays while something is
+typed in it, or while it is private, half of a pair or in the float.
+`Browser.swift` (`loneBlanks`, `open`), `SpaceRoutes.swift` (`send`),
+`Tests/space_links.py`
+
 **No new tab row in the sidebar** (2026-11-18). The "New tab" row under the
 loose tabs, and the plus that stood in for it in the column of icons, is gone,
 with `Quiet`, the view it was drawn with; the list ends at its last tab. ⌘T and

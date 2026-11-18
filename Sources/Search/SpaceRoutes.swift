@@ -246,11 +246,14 @@ extension Browser {
             }
             if spaces.contains(where: { $0.id == space.id }) {
                 var row = parked[space.id] ?? loadRow(space.id)
+                let lone = loneBlanks(in: row.tabs, splits: row.splits, typing: nil)
                 let tab = Tab(configuration: Web.configuration(space: space.id))
                 prepare(tab)
                 tab.restore(url: url, title: url.host ?? "")
                 row.tabs.append(tab)
-                if row.active == nil { row.active = tab.id }
+                // In place of the empty tab a space with nothing open shows.
+                for blank in lone { row.tabs.removeAll { $0 === blank }; blank.close() }
+                if row.active == nil || lone.contains(where: { $0.id == row.active }) { row.active = tab.id }
                 parked[space.id] = row
                 writeSession(now: true, space: space.id, row: row)
                 announce("Opened in \(space.name)")

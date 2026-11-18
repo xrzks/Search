@@ -16,7 +16,9 @@ localhost on the same port. Checked:
   typed over stays as it was; after ⌘T, the same;
 - one typed with ⌘Return opens in Two's row without going there;
 - a search, on an engine served from localhost, stays where you are;
-- the same links from a private tab stay in the first space.
+- the same links from a private tab stay in the first space;
+- a page opened into a space with nothing open, in front or behind, takes
+  the place of its empty tab (a third space, Three, for a.localhost).
 
 Nothing here makes, shows or brings forward a window.
 """
@@ -78,6 +80,11 @@ def home():
     space(action="go", index=1); time.sleep(0.8)
 
 
+def over(index=2):
+    """Over to Two, or another space, and its tabs."""
+    space(action="go", index=index); time.sleep(0.8)
+
+
 def press(code, ch, mods=()):
     return sv.cmd({"do": "press", "code": code, "chars": ch, "mods": list(mods)})
 
@@ -98,11 +105,14 @@ def main():
         sv.setup(**{"spaces": True, "spaces.links": True, "start.fresh": False, "newtab.floating": True})
         sv.launch()
         space(action="new", name="Two"); time.sleep(0.8)
-        two = next(s["id"] for s in json.load(open(f"{sv.SUPPORT}/spaces.json")) if s["name"] == "Two")
-        # The rule, written as Settings writes it, read at the next launch.
+        space(action="new", name="Three"); time.sleep(0.8)
+        made = {s["name"]: s["id"] for s in json.load(open(f"{sv.SUPPORT}/spaces.json"))}
+        two, three = made["Two"], made["Three"]
+        # The rules, written as Settings writes them, read at the next launch.
         sv.quit(); time.sleep(1)
         subprocess.run(["defaults", "write", sv.SUITE, "spaces.links.rules", "-array",
-                        f'{{ site = localhost; space = "{two}"; }}'], check=True)
+                        f'{{ site = localhost; space = "{two}"; }}',
+                        f'{{ site = a.localhost; space = "{three}"; }}'], check=True)
         # An engine on localhost, which the rule names: a search still stays.
         subprocess.run(["defaults", "write", sv.SUITE, "search.engine", "custom"], check=True)
         subprocess.run(["defaults", "write", sv.SUITE, "search.custom", f"{LOCAL}/find?q=%s"], check=True)
@@ -110,6 +120,22 @@ def main():
         home()
         first = current()
         t.ok("in the first space to begin with", first != "Two", first)
+
+        # A space with nothing open shows an empty tab, which the first page
+        # opened there replaces.
+        t.ok("the first space has only its empty tab", paths() == [""], paths())
+        over(3)
+        t.ok("Three has only its empty tab", paths() == [""], paths())
+        home()
+        typed(f"http://a.localhost:{PORT}/into-empty", ["cmd"])
+        over(3)
+        t.ok("a page opened behind into an empty space takes its empty tab's place",
+             paths() == ["/into-empty"], paths())
+        home()
+        link(f"{LOCAL}/into-front"); time.sleep(1.5)
+        t.ok("a page opened in front into an empty space takes its empty tab's place",
+             current() == "Two" and paths() == ["/into-front"], (current(), paths()))
+        home()
 
         # From another app.
         link(f"{LOCAL}/ext"); time.sleep(1.5)
