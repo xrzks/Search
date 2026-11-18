@@ -9,13 +9,18 @@ localhost on the same port. Checked:
 
 - a link from another app to localhost opens in Two, and Search switches to it;
 - one to 127.0.0.1 opens where you are;
-- a target=_blank click and a ⌘-click from a page in the first space open
-  their localhost tab in Two, and not in the first space;
+- a target=_blank click from a page in the first space opens its localhost
+  tab in Two, and not in the first space; a ⌘-click opens it in Two's row
+  without going there;
 - a plain link followed in its own tab stays in its space;
 - an address to localhost typed after ⌘L opens in Two, and the tab it was
   typed over stays as it was; after ⌘T, the same;
 - one typed with ⌘Return opens in Two's row without going there;
-- a search, on an engine served from localhost, stays where you are;
+- a search, on an engine served from localhost, goes where its address does;
+- from Two, everything to 127.0.0.1 goes to the first space (Open everything
+  else in the first space): a link from another app, an address typed, a
+  target=_blank click from a localhost page; a ⌘-click opens it in the first
+  space's row, and a target=_blank link within 127.0.0.1's own site stays;
 - the same links from a private tab stay in the first space.
 
 Nothing here makes, shows or brings forward a window.
@@ -47,6 +52,12 @@ class H(BaseHTTPRequestHandler):
             body = f'<a id="go" href="{LOCAL}/opened-cmd" {LINK}>link</a>'
         elif page == "/same":
             body = f'<a id="go" href="{LOCAL}/opened-same" {LINK}>link</a>'
+        elif page == "/to-rest":
+            body = f'<a id="go" target="_blank" href="{sv.BASE}/opened-rest" {LINK}>link</a>'
+        elif page == "/to-rest-cmd":
+            body = f'<a id="go" href="{sv.BASE}/opened-rest-behind" {LINK}>link</a>'
+        elif page == "/same-rest":
+            body = f'<a id="go" target="_blank" href="{sv.BASE}/opened-same-rest" {LINK}>link</a>'
         elif page == "/shy":
             body = f'<a id="go" target="_blank" href="{LOCAL}/opened-shy" {LINK}>link</a>'
         else:
@@ -78,6 +89,11 @@ def home():
     space(action="go", index=1); time.sleep(0.8)
 
 
+def over():
+    """Over to Two, and its tabs."""
+    space(action="go", index=2); time.sleep(0.8)
+
+
 def press(code, ch, mods=()):
     return sv.cmd({"do": "press", "code": code, "chars": ch, "mods": list(mods)})
 
@@ -103,7 +119,7 @@ def main():
         sv.quit(); time.sleep(1)
         subprocess.run(["defaults", "write", sv.SUITE, "spaces.links.rules", "-array",
                         f'{{ site = localhost; space = "{two}"; }}'], check=True)
-        # An engine on localhost, which the rule names: a search still stays.
+        # An engine on localhost, which the rule names: a search goes there.
         subprocess.run(["defaults", "write", sv.SUITE, "search.engine", "custom"], check=True)
         subprocess.run(["defaults", "write", sv.SUITE, "search.custom", f"{LOCAL}/find?q=%s"], check=True)
         sv.launch(); time.sleep(1)
@@ -130,7 +146,10 @@ def main():
 
         page = opened(f"{sv.BASE}/cmd")
         sv.cmd({"do": "tap", "id": page, "selector": "#go", "mods": ["cmd"]}); time.sleep(2)
-        t.ok("a ⌘-click to localhost opens in Two", current() == "Two" and "/opened-cmd" in paths(), (current(), paths()))
+        t.ok("a ⌘-click to localhost stays where you are", current() == first and "/opened-cmd" not in paths(),
+             (current(), paths()))
+        over()
+        t.ok("with its tab behind in Two", "/opened-cmd" in paths(), paths())
         home()
 
         page = opened(f"{sv.BASE}/same")
@@ -154,12 +173,50 @@ def main():
 
         typed(f"{LOCAL}/typed-behind", ["cmd"])
         t.ok("⌘Return stays where you are", current() == first and "/typed-behind" not in paths(), (current(), paths()))
-        space(action="go", index=2); time.sleep(0.8)
+        over()
         t.ok("with the tab behind in Two", "/typed-behind" in paths(), paths())
         home()
 
         typed("red pandas")
-        t.ok("a search stays where you are", current() == first and "/find" in paths(), (current(), paths()))
+        t.ok("a search on an engine the rule names goes to Two", current() == "Two" and "/find" in paths(),
+             (current(), paths()))
+        home()
+        t.ok("no tab for it in the first space", "/find" not in paths(), paths())
+
+        # From Two, everything no rule names goes to the first space.
+        over()
+        link(f"{sv.BASE}/rest-ext"); time.sleep(1.5)
+        t.ok("from Two, a link from another app to 127.0.0.1 goes to the first space",
+             current() == first and "/rest-ext" in paths(), (current(), paths()))
+        over()
+        t.ok("and not into Two", "/rest-ext" not in paths(), paths())
+
+        typed(f"{sv.BASE}/rest-typed")
+        t.ok("an address typed in Two that no rule names goes to the first space",
+             current() == first and "/rest-typed" in paths(), (current(), paths()))
+        over()
+        t.ok("no tab for it in Two", "/rest-typed" not in paths(), paths())
+
+        page = opened(f"{LOCAL}/to-rest")
+        sv.cmd({"do": "tap", "id": page, "selector": "#go"}); time.sleep(2)
+        t.ok("a target=_blank click from Two to 127.0.0.1 goes to the first space",
+             current() == first and "/opened-rest" in paths(), (current(), paths()))
+        over()
+        t.ok("no tab for it in Two", "/opened-rest" not in paths(), paths())
+
+        page = opened(f"{LOCAL}/to-rest-cmd")
+        sv.cmd({"do": "tap", "id": page, "selector": "#go", "mods": ["cmd"]}); time.sleep(2)
+        t.ok("a ⌘-click from Two to 127.0.0.1 stays in Two", current() == "Two" and "/opened-rest-behind" not in paths(),
+             (current(), paths()))
+        home()
+        t.ok("with its tab behind in the first space", "/opened-rest-behind" in paths(), paths())
+
+        over()
+        page = opened(f"{sv.BASE}/same-rest")
+        sv.cmd({"do": "tap", "id": page, "selector": "#go"}); time.sleep(2)
+        t.ok("a target=_blank link within its page's own site stays in Two",
+             current() == "Two" and "/opened-same-rest" in paths(), (current(), paths()))
+        home()
 
         # A private tab's links are never sent.
         before = sv.sp("state")

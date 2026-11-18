@@ -250,7 +250,7 @@ final class Links: NSObject, NSApplicationDelegate {
             for (n, url) in early.dropFirst().enumerated() {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.15 * Double(n + 1)) { [weak browser] in
                     guard let browser else { return }
-                    // One a rule sends to a space opens there, in front.
+                    // One sent to another space opens there, in front.
                     if let routed = browser.routed(url) {
                         routed.open(url, foreground: true)
                     } else {
@@ -264,8 +264,8 @@ final class Links: NSObject, NSApplicationDelegate {
     /// An address from outside the window — a link from another app, or what
     /// was typed into the address field raised from one (Launcher.swift) —
     /// into the window in front, or one brought back for it: it lands where
-    /// you are, not in the first window. Or the window, in its space, a rule
-    /// of Settings › Spaces & Pins › Send links to a space sends it to (see
+    /// you are, not in the first window. Or the window, in its space,
+    /// Settings › Spaces & Pins › Send links to a space sends it to (see
     /// SpaceRoutes.swift). The window it went to, which is left for the
     /// caller to bring the app forward to.
     @MainActor

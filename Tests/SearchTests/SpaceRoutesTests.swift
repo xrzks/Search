@@ -2,8 +2,9 @@ import XCTest
 @testable import Search
 
 /// Send links to a space (SpaceRoutes.swift): what a rule's site is, which
-/// rule an address meets, and that nothing is sent while it is off, with
-/// spaces off, or to a space that has gone.
+/// rule an address meets, that nothing is sent while it is off, with
+/// spaces off, or to a space that has gone, and which sites are one for
+/// Open everything else in the first space.
 @MainActor
 final class SpaceRoutesTests: XCTestCase {
     override class func setUp() {
@@ -66,6 +67,15 @@ final class SpaceRoutesTests: XCTestCase {
         XCTAssertNil(SpaceRoutes.space(for: url("https://other.example/"), routes: routes, on: true, spaces: spaces))
     }
 
+    func testOneSiteWithItsSubdomains() {
+        XCTAssertTrue(SpaceRoutes.same("github.com", "github.com"))
+        XCTAssertTrue(SpaceRoutes.same("github.com", "gist.github.com"))
+        XCTAssertTrue(SpaceRoutes.same("gist.github.com", "github.com"))
+        XCTAssertFalse(SpaceRoutes.same("gist.github.com", "docs.github.com"), "siblings are two sites")
+        XCTAssertFalse(SpaceRoutes.same("github.com", "notgithub.com"), "a suffix is not a subdomain")
+        XCTAssertFalse(SpaceRoutes.same("::1", "1"))
+    }
+
     func testKeptAsPlainSettings() {
         let route = SpaceRoute(site: "figma.com", space: work.id)
         XCTAssertEqual(SpaceRoute(plist: route.plist), route)
@@ -75,13 +85,16 @@ final class SpaceRoutesTests: XCTestCase {
     }
 
     func testOffByDefaultFindableAndKeptBetweenRuns() {
-        let keys = [SpaceRoutes.key, SpaceRoutes.rulesKey]
+        let keys = [SpaceRoutes.key, SpaceRoutes.rulesKey, SpaceRoutes.restKey]
         let saved = keys.map { ($0, Store.settings.object(forKey: $0)) }
         defer { for (key, value) in saved { Store.settings.set(value, forKey: key) } }
         keys.forEach(Store.settings.removeObject(forKey:))
         let prefs = Preferences()
         XCTAssertFalse(prefs.sendsLinksToSpaces)
         XCTAssertTrue(prefs.spaceRoutes.isEmpty)
+        XCTAssertTrue(prefs.sendsRestToFirstSpace, "everything else goes to the first space unless turned off")
+        prefs.sendsRestToFirstSpace = false
+        XCTAssertFalse(Preferences().sendsRestToFirstSpace)
         prefs.spaceRoutes = [SpaceRoute(site: "figma.com", space: work.id)]
         XCTAssertEqual(Preferences().spaceRoutes, prefs.spaceRoutes)
         for words in ["send links", "air traffic control", "open in space", "routing"] {
@@ -89,5 +102,9 @@ final class SpaceRoutesTests: XCTestCase {
         }
         XCTAssertEqual(SettingsIndex.item("spaces.links")?.page, .spaces)
         XCTAssertEqual(SettingsIndex.item("spaces.links")?.parent, "spaces")
+        for words in ["everything else", "default space", "first space"] {
+            XCTAssertTrue(SettingsIndex.find(words).contains { $0.id == "spaces.links.rest" }, words)
+        }
+        XCTAssertEqual(SettingsIndex.item("spaces.links.rest")?.parent, "spaces.links")
     }
 }

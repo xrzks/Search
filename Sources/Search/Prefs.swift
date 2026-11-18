@@ -748,6 +748,11 @@ final class Preferences: ObservableObject {
     @Published var spaceRoutes: [SpaceRoute] {
         didSet { store.set(spaceRoutes.map(\.plist), forKey: SpaceRoutes.rulesKey) }
     }
+    /// With that: a site no rule names opens in the first space. On unless
+    /// turned off.
+    @Published var sendsRestToFirstSpace: Bool {
+        didSet { store.set(sendsRestToFirstSpace, forKey: SpaceRoutes.restKey) }
+    }
     /// The downloads button always in the chrome, not only while something
     /// downloads (see Fetching.swift). Off unless asked for.
     @Published var alwaysShowsDownloads: Bool {
@@ -1217,6 +1222,7 @@ final class Preferences: ObservableObject {
         webmail = store.string(forKey: "mail.webmail").flatMap(Webmail.init(rawValue:)) ?? .none
         sendsLinksToSpaces = store.bool(forKey: SpaceRoutes.key)
         spaceRoutes = (store.array(forKey: SpaceRoutes.rulesKey) ?? []).compactMap(SpaceRoute.init(plist:))
+        sendsRestToFirstSpace = store.object(forKey: SpaceRoutes.restKey) as? Bool ?? true
         bookmarksBar = store.bool(forKey: "bookmarks.bar")
         alwaysShowsDownloads = store.bool(forKey: "downloads.button")
         downloadsOpening = store.string(forKey: "downloads.open").flatMap(DownloadsOpening.init(rawValue:)) ?? .tab

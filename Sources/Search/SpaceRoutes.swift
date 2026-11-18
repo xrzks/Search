@@ -6,22 +6,26 @@ import SwiftUI
 //
 // Off unless turned on in Settings › Spaces & Pins, and only with spaces on.
 // A rule is a site, its subdomains with it, and a space; the most specific
-// site wins. It sends:
+// site wins. A site no rule names goes to the first of the window's
+// profile's spaces, unless Open everything else in the first space is
+// turned off. It sends:
 //
 // - a link from another app (Search as the Mac's browser);
 // - a link a page opens in a new tab — a target="_blank" click, ⌘-click,
 //   the middle button, Open Link in New Tab — from a page in another space;
-// - an address typed after ⌘T, ⌘L or ⌘K, in a new tab there, with the tab
-//   you were on left as it was; ⌘Return opens it behind, in that space's
-//   row, without going there.
+// - an address or a search typed after ⌘T, ⌘L or ⌘K, in a new tab there,
+//   with the tab you were on left as it was. A search goes where its
+//   address does: the engine's, or a keyword's site.
 //
-// The tab opens in that space, and the window that has it, or this one
-// switched to it, comes to it. A link followed in its own tab, a search, a
-// tab picked from the field's list, a private tab's links and addresses, a
-// window the page sizes ("Sign in with…",
-// which needs its opener) and anything that isn't http or https stay where
-// they are. So does a link whose rule names a space that has gone: the rule
-// is passed over, and the link opens as it always did.
+// Opened in front, the tab takes you there: the window that has the space,
+// or this one switched to it. Opened behind (⌘Return, a ⌘-click, the middle
+// button, Open Link in New Tab), it goes into that space's row without
+// going there. A link followed in its own tab, a tab picked from the
+// field's list, a private tab's links and addresses, a window the page
+// opens from a script or sizes ("Sign in with…", which needs its opener)
+// and anything that isn't http or https stay where they are. So do, for a
+// site no rule names, a link to its page's own site and a pin's links,
+// which have its peek. A rule whose space has gone is passed over.
 
 struct SpaceRoute: Equatable, Identifiable {
     /// A host, lowercased, without www.: "notion.so".
@@ -49,6 +53,7 @@ struct SpaceRoute: Equatable, Identifiable {
 enum SpaceRoutes {
     static let key = "spaces.links"
     static let rulesKey = "spaces.links.rules"
+    static let restKey = "spaces.links.rest"
 
     // MARK: - sites
 
@@ -95,6 +100,12 @@ enum SpaceRoutes {
         return routes
             .filter { host == $0.site || (!host.contains(":") && host.hasSuffix("." + $0.site)) }
             .max { $0.site.count < $1.site.count }
+    }
+
+    /// Whether two sites are one: the same, or one a subdomain of the other.
+    static func same(_ one: String, _ other: String) -> Bool {
+        one == other || (!one.contains(":") && !other.contains(":")
+            && (one.hasSuffix("." + other) || other.hasSuffix("." + one)))
     }
 
     /// The space a rule sends an address to: only while the setting and
@@ -152,39 +163,58 @@ enum SpaceRoutes {
 }
 
 extension Browser {
-    /// For a link from another app: the window a rule sends it to, already
-    /// in its space. Nil to open it as always.
+    /// Where an address opened from this window goes: the space its rule
+    /// names, or, for a web address no rule sends anywhere, the first of
+    /// this profile's spaces, while Open everything else in the first space
+    /// is on. `rule` says which of the two.
+    func sentSpace(for url: URL) -> (space: Space, rule: Bool)? {
+        if let space = SpaceRoutes.space(for: url) { return (space, true) }
+        guard prefs.usesSpaces, prefs.sendsLinksToSpaces, prefs.sendsRestToFirstSpace,
+              SpaceRoutes.site(of: url) != nil, let first = spaces.first
+        else { return nil }
+        return (first, false)
+    }
+
+    /// For a link from another app: the window it is sent to, already in
+    /// its space. Nil to open it as always.
     func routed(_ url: URL) -> Browser? {
-        guard !isPopup, let space = SpaceRoutes.space(for: url), space.id != spaceID else { return nil }
+        guard !isPopup, let space = sentSpace(for: url)?.space, space.id != spaceID else { return nil }
         return SpaceRoutes.window(for: space, from: self)
     }
 
-    /// A link a page opens in a new tab, opened in front in the space a rule
-    /// sends it to. False when no rule sends it out of the page's space.
-    func sendToSpace(_ url: URL, from source: Tab?) -> Bool {
-        guard !isPopup, let source, !source.shy, let space = SpaceRoutes.space(for: url) else { return false }
+    /// A link a page opens in a new tab, opened in the space it is sent to,
+    /// in front or behind as the click asked. False when nothing sends it
+    /// out of the page's space.
+    func sendToSpace(_ url: URL, from source: Tab?, front: Bool) -> Bool {
+        guard !isPopup, let source, !source.shy, let (space, rule) = sentSpace(for: url) else { return false }
         let here = parked.first { $0.value.tabs.contains { $0 === source } }?.key ?? spaceID
-        guard space.id != here, let target = SpaceRoutes.window(for: space, from: self) else { return false }
-        target.open(url, foreground: true)
-        if target !== self { Browsers.show(target) }
+        guard space.id != here else { return false }
+        if !rule {
+            // Sent only for being no rule's: a link within its page's own
+            // site stays with it, and a pin's links have its peek.
+            if let page = source.address.flatMap(SpaceRoutes.site(of:)), let site = SpaceRoutes.site(of: url),
+               SpaceRoutes.same(page, site) { return false }
+            if source.pin != nil, prefs.pinsPeek { return false }
+        }
+        send(url, to: space, front: front)
         return true
     }
 
-    /// The space a rule sends an address typed into the field to, when it
-    /// isn't this one; nil to open it here as always. Never from a private
-    /// tab, whose new tabs are private too.
+    /// The space an address or search typed into the field is sent to, when
+    /// it isn't this one; nil to open it here as always. Never from a
+    /// private tab, whose new tabs are private too.
     func typedSpace(for url: URL) -> Space? {
-        guard !isPopup, active?.shy != true, let space = SpaceRoutes.space(for: url), space.id != spaceID
+        guard !isPopup, active?.shy != true, let space = sentSpace(for: url)?.space, space.id != spaceID
         else { return nil }
         return space
     }
 
-    /// An address typed into the field, in a new tab in the space a rule
-    /// sends it to: in front, or behind (⌘Return), into the row of a window
-    /// that shows the space or else this window's row for it, asleep until
-    /// it is gone to. Another profile's space that no window shows can only
-    /// be had by going there, so behind or not, it opens in front.
-    func openTyped(_ url: URL, in space: Space, front: Bool) {
+    /// An address in a new tab in another space: in front, going there, or
+    /// behind, into the row of a window that shows the space or else this
+    /// window's row for it, asleep until it is gone to. Another profile's
+    /// space that no window shows can only be had by going there, so behind
+    /// or not, it opens in front.
+    func send(_ url: URL, to space: Space, front: Bool) {
         if !front {
             if let shown = Browsers.all.first(where: { $0.isOpen && !$0.isPopup && $0.spaceID == space.id }) {
                 shown.open(url, foreground: false, mayWait: true)

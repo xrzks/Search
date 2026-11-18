@@ -164,17 +164,32 @@ they name places you have been. `HTTPSOnly.swift` (new), `Browser.swift`
 `Little.swift`, `Dialogs.swift`, `Address.swift`, `Prefs.swift`,
 `Settings.swift`, `SettingsIndex.swift`, `Tests/https_only.py` (new)
 
-**Typed addresses follow Send links to a space** (2026-11-17). The rules in
-Settings › Spaces & Pins now also apply to an address typed into the field.
-After ⌘T, ⌘K or ⌘L, or with ⇧⌘Return, the page opens in a new tab in front in
-the rule's space, and the tab you were on stays as it was. ⌘Return opens it
-behind, without going there: into the row of a window that shows the space, or
-else into this window's row for it, asleep until it is gone to; another
-profile's space that no window shows can only be had by going there, so it opens
-in front. Searches (the engine, a keyword, a site in the field), Search's own
-pages, open tabs picked from the list, private tabs and a rule naming the space
-on screen stay where they are. `SpaceRoutes.swift` (`typedSpace`, `openTyped`),
-`Browser.swift` (`submit`), `Tests/space_links.py`
+**Send links to a space sends everything** (2026-11-17, more on 2026-11-18).
+The rules in Settings › Spaces & Pins also apply to an address or a search typed
+into the field, and a site no rule names goes to the first space: the one at the
+top of the window's profile's list. So with Work holding the sites routed to it,
+anything else opened from Work lands in the first space: a link from another
+app, a link a page opens in a new tab, an address or a search typed after ⌘T, ⌘K
+or ⌘L. A search goes where its address does: the engine's, a keyword's site.
+Opened in front (a click, Return, ⇧⌘Return, ⇧⌘-click), the page opens in a new
+tab in that space and you go there; the tab you were on stays as it was. Opened
+behind (⌘Return, ⌘-click, the middle button, Open Link in New Tab), it goes
+into the row of a window that shows the space, or else this window's row for
+it, asleep until it is gone to, and you stay where you are; a rule's link
+clicked behind used to take you there. Another profile's space that no window
+shows can only be had by going there, so it opens in front. For a site no rule
+names, a link to its page's own site (the same host, or one a subdomain of the
+other) stays with its page, and a pin's links stay for its peek with Pins keep
+their site on. Links followed in their own tab, a window the page opens from a
+script or sizes ("Sign in with…"), Search's own pages, open tabs picked from
+the list and private tabs stay where they are. Settings › Spaces & Pins › Open
+everything else in the first space, on by default and only with Send links to a
+space on, turns the fallback off: unnamed sites open where you are again.
+`SpaceRoutes.swift` (`sentSpace`, `sendToSpace`, `typedSpace`, `send`,
+`same`), `Browser.swift` (`submit`, `submitToShiftEngine`, the new-tab and
+⌘-click paths), `Links.swift` (comments), `Prefs.swift`, `Settings.swift`,
+`SettingsIndex.swift`, `Tests/SearchTests/SpaceRoutesTests.swift`,
+`Tests/space_links.py`
 
 **Rosé Pine colours** (2026-11-17). Settings › Appearance › Colours: Search's
 own greys, or [Rosé Pine](https://rosepinetheme.com)'s, Dawn while the window is

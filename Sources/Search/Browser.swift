@@ -7641,6 +7641,13 @@ final class Browser: NSObject, ObservableObject {
         summoning = false
         siteChip = nil
         picked = nil
+        // Sent to another space, as Return's search is.
+        if let space = typedSpace(for: url) {
+            editing = false
+            typed = ""
+            send(url, to: space, front: true)
+            return true
+        }
         if launching {
             // The floating new tab, as Return: a tab of its own.
             open(url, foreground: true, from: active, loose: true)
@@ -7704,18 +7711,12 @@ final class Browser: NSObject, ObservableObject {
         }
 
         let target: URL?
-        // An address rather than words for an engine: only an address
-        // follows a rule to its space (see SpaceRoutes.swift).
-        let place: Bool
         if let picked, offers.indices.contains(picked) {
             target = offers[picked].url
-            place = [.open, .visited, .bookmark, .known].contains(offers[picked].kind)
         } else if ending != nil {
             target = Address.url(from: completed)
-            place = true
         } else {
             target = destination(for: typed)
-            place = siteChip == nil && Address.url(from: typed) != nil
         }
 
         guard let url = target else {
@@ -7728,13 +7729,14 @@ final class Browser: NSObject, ObservableObject {
             picked = nil
             return
         }
-        // A site sent to a space of its own: a new tab there, and nothing
-        // here changes but the field, put away.
-        if place, let space = typedSpace(for: url) {
+        // Sent to another space, a search by where it goes: a new tab
+        // there, and nothing here changes but the field, put away (see
+        // SpaceRoutes.swift).
+        if let space = typedSpace(for: url) {
             editing = false
             typed = ""
             picked = nil
-            openTyped(url, in: space, front: front || !aside)
+            send(url, to: space, front: front || !aside)
             return
         }
         if launching || fromSwitcher, !aside {
@@ -8276,7 +8278,7 @@ extension Browser: WKNavigationDelegate, WKUIDelegate {
         // the page opens from a script, or sizes, keeps its opener here.
         if clicked, !beside, !popup, action.navigationType == .linkActivated,
            (action.request.httpMethod ?? "GET").uppercased() == "GET",
-           let url = action.request.url, sendToSpace(url, from: opener) {
+           let url = action.request.url, sendToSpace(url, from: opener, front: !behind) {
             return nil
         }
         // WebKit's copy of the opener's configuration still holds the
@@ -8429,8 +8431,9 @@ extension Browser: WKNavigationDelegate, WKUIDelegate {
             }
             return
         }
-        // To a site Settings sends to another space: there, in front.
-        if sendToSpace(url, from: source) { return }
+        // To a site Settings sends to another space: there, in front or
+        // behind as the click asked.
+        if sendToSpace(url, from: source, front: foreground) { return }
         open(url, foreground: foreground, from: source, mayWait: true, link: true)
     }
 

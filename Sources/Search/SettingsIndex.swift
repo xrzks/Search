@@ -386,10 +386,16 @@ enum SettingsIndex {
               keys: ["profiles.oneWindow"], words: ["arc", "profiles", "single window", "merge"], parent: "profiles"),
         .init(id: "spaces.links", group: "spaces", icon: "arrow.triangle.branch",
               title: "Send links to a space", detail: "Links to sites you choose open in their space, with its sign-ins",
-              more: "Links from other apps, and links a page in another space opens in a new tab. A site includes its subdomains. Typed addresses, links followed in their own tab and private tabs stay where they are. Right-click a tab to send its site to the space it is in.",
+              more: "Links from other apps, links a page in another space opens in a new tab, and addresses and searches typed into the field. A site includes its subdomains. Links followed in their own tab and private tabs stay where they are. Right-click a tab to send its site to the space it is in.",
               keys: [SpaceRoutes.key, SpaceRoutes.rulesKey],
-              words: ["arc", "air traffic control", "route", "routing", "rules", "domain", "site", "open in space", "default space", "links from other apps"],
+              words: ["arc", "air traffic control", "route", "routing", "rules", "domain", "site", "open in space", "links from other apps"],
               parent: "spaces"),
+        .init(id: "spaces.links.rest", group: "spaces", icon: "arrow.uturn.left",
+              title: "Open everything else in the first space", detail: "Sites no rule names go to the space at the top of the list",
+              more: "From any space: links from other apps, links a page opens in a new tab, and addresses and searches typed into the field. A link to its own page's site stays with it, and a pin's links still open in its peek. Off, they open where you are.",
+              keys: [SpaceRoutes.restKey],
+              words: ["arc", "air traffic control", "default space", "fallback", "everything else", "first space"],
+              parent: "spaces.links"),
         .init(id: "pins.keep", group: "pins", icon: "pin.circle",
               title: "Pins keep their site", detail: "Links elsewhere open over the pin, and ⌘W takes it back home",
               more: "As in Arc and Safari: a link from a pin to another site opens in a peek over it, and a pin closed with ⌘W, or left open when Search quits, comes back at the page it was pinned at.",
@@ -649,6 +655,7 @@ enum SettingsIndex {
         case "toolbar.left", "tabs.compact": return !prefs.sidebar
         case "profiles.oneWindow": return Profiles.shared.several
         case "spaces.links": return prefs.usesSpaces
+        case "spaces.links.rest": return prefs.usesSpaces && prefs.sendsLinksToSpaces
         case "tabs.frontBeside": return prefs.newTabPlace == .next
         case "newtab.recent": return prefs.floatingNewTab
         case "links.little.tabs": return prefs.littleLinks
@@ -670,6 +677,7 @@ enum SettingsIndex {
         case "sidebar.foldIcons": return "Only with the column down a side and not hidden until the edge"
         case "profiles.oneWindow": return "Only with more than one profile"
         case "spaces.links": return "Only with Spaces on"
+        case "spaces.links.rest": return "Only with Send links to a space on"
         case "sidebar.player": return "Only with titles in the sidebar"
         case "tabs.frontBeside": return "Only with New tab position on After current"
         case "newtab.recent": return "Only with the new tab in a floating field"
