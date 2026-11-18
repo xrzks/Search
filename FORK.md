@@ -32,6 +32,20 @@ closes", as Firefox's Cookie AutoDelete does.
 
 Newest first. Each entry: what changed, why, and the files it touches.
 
+**No "On this Mac" AI** (2026-11-18). The AI add-on's own model ran in an
+engine upstream's feed offered, signed by Office Commun's team and checked
+against it; with the updater gone nothing offered it, and a fork build
+couldn't have passed the check. The provider, the engine and its build are
+taken out rather than left to vanish from Settings unexplained. The add-on
+itself is still held back in this build, as upstream has it (`AI.shipped`);
+when it comes back, Ollama and LM Studio still run a model on this Mac.
+`Updater` no longer carries the team or its Developer ID requirement, which
+only the engine read. Upstream's `README.md` and other documents may still
+mention `engine.sh`; they are left as upstream has them. `AIEngine.swift`,
+`engine.sh` and `Engine/` (removed), `AI.swift`, `AIAssist.swift`,
+`Updater.swift`, `Bench.swift` and `bench` (the `ai engine` verb),
+`build.sh` (the appcast's engine), `Proxy.swift` (comment)
+
 **An install script** (2026-11-17). With the updater gone, `./install.sh`
 is how the fork is updated: it builds a release and puts it in
 `/Applications` (or the folder given) in place of the copy there, quitting

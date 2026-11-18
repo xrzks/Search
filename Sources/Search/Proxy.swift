@@ -183,7 +183,7 @@ enum ProxyNetwork {
     /// class given to `URLProtocol.registerClass`; a session made from a
     /// configuration consults only the classes that configuration names, so
     /// a test that stands in for what Search fetches itself says so here
-    /// (as AI.mock and AIEngine.testEngine do for theirs). Only a test world
+    /// (as AI.mock does for its own). Only a test world
     /// can set it, so a shipping run is left with nothing of this.
     nonisolated(unsafe) private static var stand: [AnyClass] = []
 

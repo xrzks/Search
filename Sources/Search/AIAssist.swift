@@ -70,8 +70,7 @@ final class Assistant: ObservableObject, Identifiable {
 
     /// Where it ran, for the foot of every answer.
     var place: String {
-        provider == .thisMac ? "on this Mac · \(model)"
-            : provider.isLocal ? "on this Mac · \(provider.name) · \(model)" : "sent to \(provider.name) · \(model)"
+        provider.isLocal ? "on this Mac · \(provider.name) · \(model)" : "sent to \(provider.name) · \(model)"
     }
 
     func submit() {
@@ -110,9 +109,7 @@ final class Assistant: ObservableObject, Identifiable {
         }
         // The key, read now and let go with the request.
         let key = provider.isLocal ? nil : AIKeys.key(for: provider)
-        let stream = provider == .thisMac
-            ? AIEngine.shared.stream(system: AIPage.system(fence: fence), messages: messages)
-            : AIClient.shared.stream(provider, model: model, system: AIPage.system(fence: fence), messages: messages, key: key)
+        let stream = AIClient.shared.stream(provider, model: model, system: AIPage.system(fence: fence), messages: messages, key: key)
         task = Task { @MainActor [weak self] in
             do {
                 for try await piece in stream {
@@ -201,12 +198,6 @@ extension Browser {
         let shy = tab.shy || tab.built.map { !$0.configuration.websiteDataStore.isPersistent } == true
         guard !shy || provider.isLocal else {
             announce("In a private tab, only an AI on this Mac")
-            return
-        }
-        if provider == .thisMac, AIEngine.shared.state != .ready {
-            settingsPage = .ai
-            tuning = true
-            announce("The model isn't on this Mac yet")
             return
         }
         let model = prefs.aiModel(for: provider)
@@ -412,7 +403,6 @@ struct AISettings: View {
     @State private var hint: String?
     @State private var models: [String] = []
     @State private var looking = false
-    @ObservedObject private var engine = AIEngine.shared
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -429,8 +419,8 @@ struct AISettings: View {
                         } else {
                         Picker("", selection: Binding(get: { prefs.aiProvider }, set: { prefs.aiProvider = $0 })) {
                             Text("Choose…").tag(AIProvider?.none)
-                            ForEach(AIProvider.allCases.filter { $0 != .thisMac || engine.available || prefs.aiProvider == .thisMac }) { provider in
-                                Text(provider == .thisMac ? provider.name : provider.isLocal ? "\(provider.name), on this Mac" : provider.name)
+                            ForEach(AIProvider.allCases) { provider in
+                                Text(provider.isLocal ? "\(provider.name), on this Mac" : provider.name)
                                     .tag(AIProvider?.some(provider))
                             }
                         }
@@ -441,7 +431,7 @@ struct AISettings: View {
                     }
                     if let provider = prefs.aiProvider {
                         Rule()
-                        if provider == .thisMac { onThisMac } else if provider.isLocal { localModel(provider) } else { key(provider); Rule(); cloudModel(provider) }
+                        if provider.isLocal { localModel(provider) } else { key(provider); Rule(); cloudModel(provider) }
                     }
                 }
                 .onChange(of: prefs.aiProvider) { _, _ in
@@ -458,36 +448,6 @@ struct AISettings: View {
                             browser.announce("Keys forgotten")
                         }
                     }
-                }
-            }
-        }
-    }
-
-    /// The model here: downloaded when you say, checked, prepared once.
-    @ViewBuilder
-    private var onThisMac: some View {
-        let size = ByteCountFormatter.string(fromByteCount: engine.downloadSize, countStyle: .file)
-        if AIEngine.translated {
-            Line("Model", "Needs the Apple Silicon version of Search — this copy runs translated") { EmptyView() }
-        } else {
-            switch engine.state {
-            case .absent:
-                Line("Model", "\(AIEngine.model.name), downloaded once (\(size)) and checked. Nothing leaves this Mac") {
-                    Pill("Download", filled: true) { engine.install() }
-                }
-            case .downloading(let done):
-                Line("Model", "Downloading… \(Int(done * 100))%") {
-                    Pill("Cancel") { engine.cancelInstall() }
-                }
-            case .preparing:
-                Line("Model", "Preparing it for this Mac — about twenty seconds, once") { EmptyView() }
-            case .ready:
-                Line("Model", "\(AIEngine.model.name), on this Mac. Nothing leaves it") {
-                    Pill("Remove") { engine.remove() }
-                }
-            case .failed(let why):
-                Line("Model", why) {
-                    Pill("Try Again") { engine.install() }
                 }
             }
         }
