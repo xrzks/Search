@@ -414,6 +414,10 @@ final class Tab: ObservableObject, Identifiable {
     /// The http address the page is on its way to over https instead, and
     /// that https address; until it commits or fails.
     var upgraded: (plain: URL, secure: URL)?
+    /// The tagged address the page is on its way to without its campaign
+    /// tags, and that clean one, until the page commits (see Browser.decide):
+    /// a site that sends the clean one back to the tagged one has its way.
+    var untagged: (tagged: URL, clean: URL)?
     /// How far down the page you are, nought to one. The tab's own pill fills
     /// with it. Kept apart from the rest of the tab (see Reading): it changes
     /// all the way down a page, and only the fill has any use for it.

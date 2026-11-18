@@ -475,6 +475,12 @@ final class Preferences: ObservableObject {
             ClickIDs.on = removesClickIDs
         }
     }
+    /// Campaign tags (utm_ and the rest of CleanLink's list) taken off a
+    /// page's address before it loads, as Copy Clean Link takes them off a
+    /// copied one (see Browser.decide). On unless turned off.
+    @Published var removesCampaignTags: Bool {
+        didSet { store.set(removesCampaignTags, forKey: "privacy.campaignTags") }
+    }
     /// Extensions' own requests to sites they may read carry the site's
     /// cookies, as in Chrome (see ExtensionFetch.swift). On unless turned off.
     @Published var sendsSignIns: Bool {
@@ -1092,6 +1098,7 @@ final class Preferences: ObservableObject {
         let removes = store.object(forKey: "privacy.clickIDs") as? Bool ?? true
         removesClickIDs = removes
         ClickIDs.on = removes
+        removesCampaignTags = store.object(forKey: "privacy.campaignTags") as? Bool ?? true
         sendsSignIns = store.object(forKey: "extensions.credentialedFetch") as? Bool ?? true
         httpsOnly = store.object(forKey: "https.only") as? Bool ?? true
         // Offered by default only in a build that can actually do them —

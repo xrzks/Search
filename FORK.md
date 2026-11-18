@@ -32,6 +32,19 @@ closes", as Firefox's Cookie AutoDelete does.
 
 Newest first. Each entry: what changed, why, and the files it touches.
 
+**Campaign tags off links** (2026-11-18). WebKit's click-ID removal takes
+gclid, fbclid and the like off a page's address but leaves `utm_` tags, as
+Safari does, and uses Apple's list, not Copy Clean Link's. Settings ›
+Privacy › Blocking › Remove campaign tags from links (on by default) loads
+the page at the address Copy Clean Link would copy instead: `utm_*` and the
+rest of `CleanLink.tracking`, with an address that carries a signature left
+as it is. Only the page itself and only a plain GET going somewhere new: not
+a frame, a form, Back or Reload. A site that sends the clean address
+straight back to the tagged one, before the page arrives, is let have it.
+`Browser.swift` (`decide`, `didCommit`), `Tab.swift` (`untagged`),
+`Prefs.swift`, `Settings.swift`, `SettingsIndex.swift`, `Sync.swift`,
+`Tests/block_lists.py`
+
 **The fork's own identity** (2026-11-18). The bundle identifier is
 `io.github.xrzks.search` instead of upstream's `com.officecommun.search`,
 and the folder in Application Support is "Search Fork" instead of "Search",
