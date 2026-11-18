@@ -35,16 +35,9 @@ final class Links: NSObject, NSApplicationDelegate {
         let alert = NSAlert()
         alert.messageText = "Quit Search?"
         alert.informativeText = "Your windows and tabs will close."
-        alert.addButton(withTitle: "Quit").keyEquivalent = ""
-        let cancel = alert.addButton(withTitle: "Cancel")
-        alert.window.defaultButtonCell = cancel.cell as? NSButtonCell
-        // Making Cancel the Return default replaces its Escape equivalent.
-        let escape = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-            guard event.window === alert.window, event.keyCode == 53 else { return event }
-            cancel.performClick(nil)
-            return nil
-        }
-        defer { if let escape { NSEvent.removeMonitor(escape) } }
+        // Quit takes Return, so ⌘Q then Return quits; Cancel keeps Escape.
+        alert.addButton(withTitle: "Quit")
+        alert.addButton(withTitle: "Cancel")
         return alert.runModal() == .alertFirstButtonReturn
     }
 
