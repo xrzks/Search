@@ -71,11 +71,13 @@ enum Identity {
 }
 
 /// The app's entry point: what upstream left behind is brought over before
-/// SwiftUI starts, then Search runs as it always has.
+/// SwiftUI starts, and the sites not kept are forgotten (Forget.swift), then
+/// Search runs as it always has.
 @main
 enum Launch {
     static func main() {
         Identity.carryOver()
+        Forget.atLaunch()
         SearchApp.main()
     }
 }

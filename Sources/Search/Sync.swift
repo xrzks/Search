@@ -75,6 +75,8 @@ enum SyncSettings {
         coded("privacy.campaignTags", \.removesCampaignTags),
         coded("privacy.clickIDs", \.removesClickIDs),
         coded("privacy.gpc", \.sendsPrivacySignal),
+        coded("forget.sites", \.forgetsSites),
+        coded("forget.keep", \.keptSites),
         coded("bookmarks.bar", \.bookmarksBar),
         coded("quit.confirm", \.confirmsQuit),
     ]
@@ -83,7 +85,8 @@ enum SyncSettings {
     static let known: Set<String> = [
         "look", "glyph", "search.engine", "search.custom", "search.suggest", "search.keywords", "spaces",
         "pins.list", "pins.home", "tabs.close.after", "tabs.newPlace", "tabs.shortcuts", "shield",
-        "shield.easyprivacy", "shield.easylist", "privacy.campaignTags", "privacy.clickIDs", "privacy.gpc", "bookmarks.bar", "quit.confirm",
+        "shield.easyprivacy", "shield.easylist", "privacy.campaignTags", "privacy.clickIDs", "privacy.gpc", "forget.sites", "forget.keep",
+        "bookmarks.bar", "quit.confirm",
     ]
 
     private static func coded<T: Codable & Equatable>(_ key: String, _ path: ReferenceWritableKeyPath<Preferences, T>) -> Setting {

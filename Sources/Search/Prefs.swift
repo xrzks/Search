@@ -495,6 +495,15 @@ final class Preferences: ObservableObject {
     @Published var removesCampaignTags: Bool {
         didSet { store.set(removesCampaignTags, forKey: "privacy.campaignTags") }
     }
+    /// Forget sites between launches (see Forget.swift). On unless turned
+    /// off; in a test run, off unless turned on.
+    @Published var forgetsSites: Bool {
+        didSet { store.set(forgetsSites, forKey: Forget.key) }
+    }
+    /// The sites it leaves, as typed sites ("notion.so"), in the order added.
+    @Published var keptSites: [String] {
+        didSet { store.set(keptSites, forKey: Forget.keptKey) }
+    }
     /// Extensions' own requests to sites they may read carry the site's
     /// cookies, as in Chrome (see ExtensionFetch.swift). On unless turned off.
     @Published var sendsSignIns: Bool {
@@ -1120,6 +1129,8 @@ final class Preferences: ObservableObject {
         removesClickIDs = removes
         ClickIDs.on = removes
         removesCampaignTags = store.object(forKey: "privacy.campaignTags") as? Bool ?? true
+        forgetsSites = Forget.on
+        keptSites = (store.array(forKey: Forget.keptKey) as? [String] ?? []).compactMap(SpaceRoutes.site)
         sendsSignIns = store.object(forKey: "extensions.credentialedFetch") as? Bool ?? true
         httpsOnly = store.object(forKey: "https.only") as? Bool ?? true
         // Offered by default only in a build that can actually do them —

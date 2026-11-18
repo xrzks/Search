@@ -251,6 +251,7 @@ struct SiteCard: View {
             Row("Print…", keys: ShortcutStore.shared.key(for: "file.print")?.display ?? "") { after { browser.printPage() } }
             zoom
             blocker
+            kept
             if let url = tab.pageAddress, ["http", "https"].contains(url.scheme?.lowercased() ?? "") {
                 Row("Site Permissions", submenu: true) { showingPermissions = true }
             }
@@ -351,6 +352,29 @@ struct SiteCard: View {
            let url = tab.pageAddress, ["http", "https"].contains(url.scheme?.lowercased()),
            let host = browser.curtain.host(of: url) {
             Blocker(host: host) { tab.reload() }
+        }
+    }
+
+    /// Whether the site's sign-ins outlast Search (see Forget.swift): on
+    /// while the list of sites to keep has it, so one click keeps it and
+    /// another lets it go. Only while sites are forgotten at all, and not
+    /// in a private tab, where nothing is kept.
+    @ViewBuilder private var kept: some View {
+        if !tab.shy, prefs.forgetsSites, let url = tab.pageAddress, let site = Forget.site(of: url) {
+            let on = Binding(get: { Forget.keeps(site, in: prefs.keptSites) },
+                             set: { $0 ? Forget.keep(site) : Forget.unkeep(site) })
+            HStack(spacing: 0) {
+                Text("Keep This Site's Sign-Ins").font(MenuMetrics.font)
+                Spacer(minLength: 24)
+                Switch(on: on)
+                    .accessibilityRepresentation { Toggle("Keep This Site's Sign-Ins", isOn: on) }
+                    .focusable()
+                    .onKeyPress(.space) { on.wrappedValue.toggle(); return .handled }
+            }
+            .padding(.leading, MenuMetrics.text)
+            .padding(.trailing, MenuMetrics.trailing)
+            .frame(height: MenuMetrics.row)
+            .help("Its cookies and site data stay when Search opens, and when you clear cookies or the cache. Kept as \(site).")
         }
     }
 
