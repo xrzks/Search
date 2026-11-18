@@ -453,6 +453,14 @@ enum SettingsIndex {
               title: "Block ads and trackers", detail: "Third parties whose only job is to watch, and YouTube's ads",
               more: "On YouTube, the ads announced in the player's own data are taken out before the video starts. Turn it off for one site in its card: click the tab you're on.",
               keys: ["shield"], words: ["adblock", "ad blocker", "ads", "youtube"]),
+        .init(id: "shield.easyprivacy", group: "blocking", icon: "eye.trianglebadge.exclamationmark",
+              title: "Block more trackers", detail: "EasyPrivacy's list of tens of thousands, as of this build",
+              more: "Brought in when Search is built and never fetched by Search itself, so it is as new as the build. Off for a site with the rest of the blocking, in its card.",
+              keys: ["shield.easyprivacy"], words: ["easyprivacy", "filter list", "tracker list", "ublock", "trackers"], parent: "shield"),
+        .init(id: "shield.easylist", group: "blocking", icon: "rectangle.badge.xmark",
+              title: "Block more ads", detail: "EasyList's list, as of this build. It hides boxes on pages too",
+              more: "Brought in when Search is built and never fetched by Search itself. Now and then it hides something a site needs: turn blocking off for that site in its card.",
+              keys: ["shield.easylist"], words: ["easylist", "filter list", "ad list", "ublock", "ads"], parent: "shield"),
         .init(id: "sites.keep", group: "blocking", icon: "eye.slash",
               title: "Prevent cross-site tracking", detail: "As in Safari. Private tabs keep it on",
               more: "Off, sites you rarely open keep their sign-ins, and trackers inside other sites can follow you across them again, as in Chrome.",
@@ -599,6 +607,8 @@ enum SettingsIndex {
         switch item.id {
         case "privacy.clickIDs": return ClickIDs.possible
         case "privacy.gpc": return PrivacySignal.possible
+        case "shield.easyprivacy": return ShieldList.inBuild.contains(.easyprivacy)
+        case "shield.easylist": return ShieldList.inBuild.contains(.easylist)
         default: return true
         }
     }
@@ -645,6 +655,7 @@ enum SettingsIndex {
         case "mail.default": return prefs.webmail != .none
         case "links.peek.stays": return prefs.peeksLinks || prefs.pinsPeek
         case "launcher.key": return prefs.launcher
+        case "shield.easyprivacy", "shield.easylist": return prefs.shielded
         default: return true
         }
     }
@@ -666,6 +677,7 @@ enum SettingsIndex {
         case "mail.default": return "Only with a webmail chosen for email links"
         case "links.peek.stays": return "Only when links or pins open peeks"
         case "launcher.key": return "Only with the address field from any app on"
+        case "shield.easyprivacy", "shield.easylist": return "Only with Block ads and trackers on"
         default: return "Only with the tabs down a side"
         }
     }

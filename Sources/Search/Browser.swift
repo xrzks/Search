@@ -2849,6 +2849,7 @@ final class Browser: NSObject, ObservableObject {
         if first {
             Shield.shared.enabled = prefs.shielded
             Shield.shared.compile()
+            Shield.shared.choose(prefs.shieldLists)
             if #available(macOS 15.4, *) { Extensions.shared.start(for: self) }
             if prefs.bench {
                 Bench.shared.start(for: self)
@@ -3192,6 +3193,15 @@ final class Browser: NSObject, ObservableObject {
                 Shield.shared.enabled = on
                 Shield.shared.apply(to: tabs.compactMap { $0.built?.configuration.userContentController })
                 announce(on ? "Ads and trackers blocked" : "Blocking off — reload to see the difference")
+            }
+            .store(in: &bag)
+        // The bigger lists, switched in Settings: every window hears it, and
+        // choosing the same lists again changes nothing.
+        prefs.$blocksMoreTrackers.combineLatest(prefs.$blocksMoreAds)
+            .dropFirst()
+            .sink { [weak self] _, _ in
+                // After the didSet, so shieldLists reads the new values.
+                DispatchQueue.main.async { if let self { Shield.shared.choose(self.prefs.shieldLists) } }
             }
             .store(in: &bag)
 

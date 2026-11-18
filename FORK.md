@@ -32,6 +32,34 @@ closes", as Firefox's Cookie AutoDelete does.
 
 Newest first. Each entry: what changed, why, and the files it touches.
 
+**Bigger block lists** (2026-11-18). Shield's own list names twelve
+trackers; EasyPrivacy and EasyList now go with it, as lists of their own,
+switched in Settings › Privacy › Blocking: Block more trackers (EasyPrivacy,
+on by default) and Block more ads (EasyList, off by default, since it hides
+boxes on pages too and now and then one a site needs). Both only while
+Block ads and trackers is on, and both off for a site paused in its card.
+`blocklists.py`, run by `build.sh` for every build, fetches the lists from
+easylist.to at most once a day into `build/lists/` (the last copy is used
+without a network; with none, that list is left out and Settings doesn't
+offer it), converts them to WebKit's content rules, and puts them in the app
+deflated (`Resources/Blocking/*.rules`, 1.2 MB for 14 MB of JSON). Search
+never fetches them itself, so a list is as new as the build: `./install.sh`
+is how it is updated. Only what WebKit's rules can say the way the list
+means it is converted (network rules with `||`, `|`, `^`, `*`,
+`$third-party`, `$domain=`, the resource types, `$match-case`, exceptions,
+`$important`, `@@…$document`; element hiding with plain CSS), and the rest
+is left out rather than stretched: about 83 of EasyPrivacy's rules and 4,200
+of EasyList's (regular expressions, `$redirect`, `$csp`, `$removeparam`,
+`$popup`, uBO's and AdGuard's extended syntax, `google.*` domains, `$domain=`
+lists that both name and exclude, `$elemhide`/`$generichide` exceptions).
+WebKit compiles each list the first time it is switched on, 1–3 seconds, in
+which pages load without it, and keeps the result; a new build's list
+replaces the old one's. `blocklists.py` (new), `build.sh`, `Shield.swift`
+(`ShieldList`, `choose`; the lists each page's controller holds are tracked
+as a set instead of one on/off), `Prefs.swift`, `Browser.swift`,
+`Settings.swift`, `SettingsIndex.swift`, `Sync.swift`,
+`Tests/block_lists.py` (new)
+
 **Campaign tags off links** (2026-11-18). WebKit's click-ID removal takes
 gclid, fbclid and the like off a page's address but leaves `utm_` tags, as
 Safari does, and uses Apple's list, not Copy Clean Link's. Settings ›
