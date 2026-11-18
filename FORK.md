@@ -8,9 +8,11 @@ keeps, and removes, narrows or puts behind a setting anything that doesn't need
 to be there.
 
 Everything that differs from upstream is listed below, so the fork can be
-rebased onto upstream without losing track of what is ours. This file is the
-only place the fork is described — `README.md`, `CHANGELOG.md` and the other
-upstream documents are left as upstream has them, so merges stay clean.
+rebased onto upstream without losing track of what is ours. This file is
+where the fork is described, with a short front page for GitHub in
+`.github/README.md`, a path upstream doesn't use — `README.md`, `CHANGELOG.md`
+and the other upstream documents are left as upstream has them, so merges stay
+clean.
 
 ## Roadmap
 
@@ -31,6 +33,14 @@ closes", as Firefox's Cookie AutoDelete does.
 ## Changes from upstream
 
 Newest first. Each entry: what changed, why, and the files it touches.
+
+**The fork's own front page** (2026-11-18). GitHub shows `.github/README.md`
+in place of the root `README.md` when there is one, and upstream has none, so
+the fork's page on GitHub says what it is without touching upstream's README:
+a fork, a link here, and where upstream's README no longer holds (no updater,
+not signed by Office Commun, its own identifier and folder, the download link
+and cask being upstream's). A clone still opens on upstream's README.
+`.github/README.md` (new)
 
 **Bigger block lists** (2026-11-18). Shield's own list names twelve
 trackers; EasyPrivacy and EasyList now go with it, as lists of their own,
