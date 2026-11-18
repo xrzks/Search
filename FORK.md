@@ -19,16 +19,30 @@ clean.
 What the fork plans to build, roughly in order. When something lands, its entry
 moves to [Changes](#changes-from-upstream) with the files it touches.
 
-**Forget a site when you're done with it.** Settings › Privacy › Clear only
-clears every site at once, and nothing is cleared at quit. The plan: a list of
-sites whose cookies and storage are kept (the ones you sign in to), and at quit
-every other site's data goes, through `WKWebsiteDataStore`'s records for each
-profile's and space's store, as Clear's Cookies and sign-ins does today for all
-of them. Private tabs already keep nothing. To decide: whether the kept list is
-typed in Settings or taken from the site card ("Keep this site's sign-ins"),
-whether a site you are signed in to in an open tab is spared at quit, and
-whether "at quit" should also be "when its last tab closes", as Firefox's Cookie
-AutoDelete does.
+**Forget sites between launches.** Sites you only pass through keep their
+cookies, storage and cache until you clear them, and Settings › Privacy › Clear
+clears every site at once, signing you out of everything. The plan: when Search
+launches, before any tab loads, everything `WKWebsiteDataStore` keeps for a site
+goes — cookies, local storage, IndexedDB, service workers and cache — unless the
+site is on a list of sites to keep. It goes through the records of each
+profile's and each space's store, as Clear's Cookies and sign-ins does today,
+every profile and not only the ones with a window open. Clearing at launch
+rather than at quit keeps quitting instant and covers a crash or a force quit
+the same way; no site can see the data while Search isn't running. It is on by
+default, with a switch in Settings › Privacy. Private tabs already keep nothing.
+
+The list is in Settings › Privacy, matched as Settings › Spaces & Pins matches a
+site for Send links to a space. An entry is typed as "notion.so",
+"https://www.notion.so/x" or "*.notion.so" and kept as the site "notion.so",
+www. dropped, and it covers that site and its subdomains, so mail.notion.so is
+kept with notion.so. An IP address is taken as it is, and a name only with a dot
+or as localhost. Clear's Cookies and sign-ins and Cache go through the list too,
+leaving the sites it keeps and saying so, and Clear History leaves the list
+alone: it is a choice about sites, not a record of where you have been. The site
+card, which a click on the tab you are on shows under its address, gets a switch
+beside Block Ads and Trackers and Keep This Site Awake: Keep This Site's
+Sign-Ins, on while the site is on the list, so one click adds it and another
+takes it off. A private tab's card leaves it out, since nothing is kept there.
 
 ## Changes from upstream
 
