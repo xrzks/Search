@@ -838,7 +838,6 @@ struct SettingsPanel: View {
         case "launcher.key": LauncherKeyBox(prefs: prefs)
         case "launcher.little": Switch(on: $prefs.launcherLittle)
         case "note.switcher": Always()
-        case "about.feedback": Pill("Send Feedback") { Links.writeFeedback() }
         case "about.notes": Pill("What's New…") { browser.lead(to: InternalPage(.notes)) }
         case "extensions.fetch": Switch(on: $prefs.sendsSignIns)
         case "bench": Switch(on: $prefs.bench)

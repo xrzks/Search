@@ -15,10 +15,14 @@ import Foundation
 // else the address is an ordinary page. The verifier that makes the code
 // worth anything lives only in memory, for the flow: a code slipped into a
 // tab by someone else is worth nothing without it.
+//
+// Upstream's callback is on officecommun.com; the fork's is on its own
+// GitHub Pages host, so the address a sign-in names is one the fork answers
+// for, though nothing is served there.
 
 @MainActor
 enum AISignIn {
-    static let callback = URL(string: "https://officecommun.com/search/ai/callback")!
+    static let callback = URL(string: "https://xrzks.github.io/Search/ai/callback")!
 
     /// openrouter.ai itself, where you sign in — in a test run, the stand-in.
     static var site: URL {

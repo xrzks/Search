@@ -431,9 +431,9 @@ private struct QuitAndHelp: Commands {
             }
             .keyboardShortcut("q", modifiers: .command)
         }
-        CommandGroup(replacing: .help) {
-            Button("Send Feedback…") { Links.writeFeedback() }
-        }
+        // Upstream's Send Feedback wrote to Office Commun about a build they
+        // didn't make; the fork leaves the Help menu empty instead.
+        CommandGroup(replacing: .help) {}
     }
 }
 

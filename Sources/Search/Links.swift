@@ -422,9 +422,11 @@ final class Links: NSObject, NSApplicationDelegate {
         _ = NSApp.delegate?.applicationOpenUntitledFile?(NSApp)
     }
 
-    /// ⌘⇧F, the Help menu, and the About page all come here: a draft, in
-    /// Mail, that already knows what build this is. The person still reads
-    /// it and presses send themselves — nothing here sends anything.
+    /// A draft, in Mail, that already knows what build this is. The person
+    /// still reads it and presses send themselves — nothing here sends
+    /// anything. Upstream's Help menu and About page come here; the fork's
+    /// don't, since the draft goes to Office Commun, but it is kept so a
+    /// merge from upstream stays simple.
     static func writeFeedback() {
         var text = URLComponents()
         text.scheme = "mailto"
