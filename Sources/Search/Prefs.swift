@@ -657,6 +657,20 @@ final class Preferences: ObservableObject {
     @Published var shielded: Bool {
         didSet { store.set(shielded, forKey: "shield") }
     }
+    /// EasyPrivacy's list with the blocker's own, when this build has it
+    /// (see ShieldList). On unless turned off.
+    @Published var blocksMoreTrackers: Bool {
+        didSet { store.set(blocksMoreTrackers, forKey: "shield.easyprivacy") }
+    }
+    /// EasyList's, likewise. Off unless turned on: it hides boxes on the page
+    /// too, and now and then one a site needed.
+    @Published var blocksMoreAds: Bool {
+        didSet { store.set(blocksMoreAds, forKey: "shield.easylist") }
+    }
+    /// The lists of ShieldList that are switched on.
+    var shieldLists: Set<ShieldList> {
+        Set(ShieldList.allCases.filter { $0 == .easyprivacy ? blocksMoreTrackers : blocksMoreAds })
+    }
     /// Settings › Privacy › Prevent cross-site tracking, turned off: WebKit's
     /// tracking prevention off, as Safari's same switch does (see
     /// Store.keepsSignIns). On unless turned off.
@@ -1524,6 +1538,8 @@ final class Preferences: ObservableObject {
         tabClickKeepsName = store.bool(forKey: "tabs.clickKeepsName")
         tabClickRenames = store.bool(forKey: "tabs.clickRenames")
         shielded = store.object(forKey: "shield") as? Bool ?? true
+        blocksMoreTrackers = store.object(forKey: "shield.easyprivacy") as? Bool ?? true
+        blocksMoreAds = store.bool(forKey: "shield.easylist")
         let keeps = store.bool(forKey: "sites.keep")
         keepsSignIns = keeps
         // Before the first page is loaded into the store.

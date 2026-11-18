@@ -723,6 +723,8 @@ struct SettingsPanel: View {
                 ? "macOS was told no: System Settings › Privacy & Security › Passkeys"
                 : item.detail
         case "shield": return shield.trouble ?? item.detail
+        case "shield.easyprivacy": return shield.biggerTrouble[.easyprivacy] ?? item.detail
+        case "shield.easylist": return shield.biggerTrouble[.easylist] ?? item.detail
         case "arc.import": return arcHere ? item.detail : "Arc isn't on this Mac. Bring Things Over can read an export"
         default: return item.detail
         }
@@ -1131,6 +1133,8 @@ struct SettingsPanel: View {
                 }
             }))
         case "shield": Switch(on: $prefs.shielded)
+        case "shield.easyprivacy": Switch(on: $prefs.blocksMoreTrackers)
+        case "shield.easylist": Switch(on: $prefs.blocksMoreAds)
         case "sites.keep": Switch(on: Binding(get: { !prefs.keepsSignIns }, set: { prefs.keepsSignIns = !$0 }))
         case "privacy.clickIDs": Switch(on: $prefs.removesClickIDs)
         case "privacy.campaignTags": Switch(on: $prefs.removesCampaignTags)

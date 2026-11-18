@@ -215,6 +215,10 @@ mv "$APP/Contents/MacOS/$NAME.sdk" "$APP/Contents/MacOS/$NAME"
 # The AppleScript dictionary (Scripting.swift): read-only, tabs' addresses
 # and titles. The plist below points to it.
 cp Search.sdef "$APP/Contents/Resources/"
+# EasyPrivacy and EasyList as WebKit's rules (Shield, Settings › Privacy ›
+# Blocking): fetched here at most once a day, kept in build/lists/ for a
+# build without a network, and never fetched by Search itself.
+python3 -I blocklists.py "$APP/Contents/Resources/Blocking"
 
 # Symbols stay out of the app. The linker leaves every function's name and a
 # map back to the source in the binary — 15,000 entries, more than half of
