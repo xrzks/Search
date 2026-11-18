@@ -98,7 +98,7 @@ struct ProxySettingsValue: Codable, Equatable {
 /// value, a log line or an error. A test run keeps it in memory and leaves
 /// the real keychain alone.
 enum ProxySecret {
-    private static let service = "com.officecommun.search.proxy"
+    private static let service = Identity.bundle + ".proxy"
     private static let account = "global"
     /// A test run's, gone when it quits, as AIKeys keeps its own.
     nonisolated(unsafe) private static var rehearsal: String?

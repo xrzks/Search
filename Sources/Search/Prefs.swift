@@ -187,7 +187,7 @@ final class Preferences: ObservableObject {
             if agents != oldValue { AgentTrust.shared.forgetAll() }
         }
     }
-    static let agentsMark = SwitchMark(service: "com.officecommun.search.agents")
+    static let agentsMark = SwitchMark(service: Identity.bundle + ".agents")
     /// Found on at launch without the mark, and put back to off.
     private(set) var agentsRefused = false
     /// Light, dark, or the Mac's own.
