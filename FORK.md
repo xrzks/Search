@@ -31,18 +31,26 @@ rather than at quit keeps quitting instant and covers a crash or a force quit
 the same way; no site can see the data while Search isn't running. It is on by
 default, with a switch in Settings › Privacy. Private tabs already keep nothing.
 
-The list is in Settings › Privacy, matched as Settings › Spaces & Pins matches a
-site for Send links to a space. An entry is typed as "notion.so",
-"https://www.notion.so/x" or "*.notion.so" and kept as the site "notion.so",
-www. dropped, and it covers that site and its subdomains, so mail.notion.so is
-kept with notion.so. An IP address is taken as it is, and a name only with a dot
-or as localhost. Clear's Cookies and sign-ins and Cache go through the list too,
-leaving the sites it keeps and saying so, and Clear History leaves the list
+The list is in Settings › Privacy, and an entry is typed as for Send links to a
+space in Settings › Spaces & Pins: "notion.so", "https://www.notion.so/x" or
+"*.notion.so", kept as the site "notion.so", www. dropped. An IP address is
+taken as it is, and a name only with a dot or as localhost. A site's data stays
+when an entry and the site are the same, or one is a subdomain of the other
+(`SpaceRoutes.same`): WebKit keeps a site's data under its registrable domain,
+so typing mail.notion.so keeps notion.so's data, and typing notion.so keeps
+mail.notion.so's. Clear's Cookies and sign-ins and Cache go through the list
+too, leaving the sites it keeps and saying so, and Clear History leaves the list
 alone: it is a choice about sites, not a record of where you have been. The site
 card, which a click on the tab you are on shows under its address, gets a switch
 beside Block Ads and Trackers and Keep This Site Awake: Keep This Site's
-Sign-Ins, on while the site is on the list, so one click adds it and another
+Sign-Ins, on while the list keeps the site, so one click adds it and another
 takes it off. A private tab's card leaves it out, since nothing is kept there.
+A line under the list says that a site you sign in to through another, Google
+or Microsoft, needs that one kept too.
+
+Maybe, later: forget a site when its last tab closes as well, for a Search left
+running for weeks, where forgetting only at launch keeps every site passed
+through for as long as it runs.
 
 ## Changes from upstream
 
