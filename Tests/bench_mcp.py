@@ -376,7 +376,7 @@ def stop(world, wipe=True):
         for byte in world.encode():
             h = ((h ^ byte) * 16777619) & 0xFFFFFFFF
         store = f"5E4C{h >> 16:04X}-{h & 0xFFFF:04X}-4000-8000-"
-        webkit = os.path.expanduser("~/Library/WebKit/com.officecommun.search")
+        webkit = os.path.expanduser("~/Library/WebKit/io.github.xrzks.search")
         shutil.rmtree(f"{webkit}/WebsiteDataStore/{store.lower()}000000000001", ignore_errors=True)
         shutil.rmtree(f"{webkit}/WebExtensions/{store}000000000002", ignore_errors=True)
         shutil.rmtree(support(world), ignore_errors=True)

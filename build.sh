@@ -98,6 +98,9 @@ BUILD="$(date +%Y%m%d%H%M)"
 # The oldest macOS this runs on — in the plist, and in the appcast so an
 # older Mac is not handed a build it can't open.
 MINIMUM="14.0"
+# The fork's own identifier, apart from upstream's com.officecommun.search
+# (Identity.swift, which says the same and brings the old one's data over).
+BUNDLE_ID="io.github.xrzks.search"
 
 # -Osize for a release: 14% less binary (5.39 → 4.65 MB) at the same speed —
 # launch 337 against 338 ms, a scroll frame 0.26 against 0.25 ms, a key typed
@@ -269,7 +272,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>CFBundleName</key><string>$NAME</string>
   <key>CFBundleDisplayName</key><string>$NAME</string>
   <key>CFBundleExecutable</key><string>$NAME</string>
-  <key>CFBundleIdentifier</key><string>com.officecommun.search</string>
+  <key>CFBundleIdentifier</key><string>$BUNDLE_ID</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>$VERSION</string>
   <key>CFBundleVersion</key><string>$BUILD</string>

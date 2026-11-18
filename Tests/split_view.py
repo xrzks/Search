@@ -74,7 +74,7 @@ started = set()
 def running(): return set(subprocess.run(["pgrep", "-f", APP + "/Contents/MacOS"], capture_output=True, text=True).stdout.split())
 def holding(): return set(subprocess.run(["lsof", "-t", "--", SOCK], capture_output=True, text=True).stdout.split()) if os.path.exists(SOCK) else set()
 def pids(): return sorted((started & running()) | (holding() & running()))
-WEBKIT = f"{HOME}/Library/WebKit/com.officecommun.search"
+WEBKIT = f"{HOME}/Library/WebKit/io.github.xrzks.search"
 def stores():
     """The WebKit stores this world's runs made, where WebKit keeps them and
     named as the app names them (Store.probeStore, Spaces.store): its
@@ -106,7 +106,7 @@ def stores():
             found.append(f"{WEBKIT}/WebsiteDataStore/{id}")
     return found
 # The real Search's folder, beside whose stores these are removed.
-REAL = f"{HOME}/Library/Application Support/Search"
+REAL = f"{HOME}/Library/Application Support/Search Fork"
 FIRST_SPACE = "00000000-0000-0000-0000-000000000001"
 PERSONAL = "00000000-0000-0000-0000-0000000000A1"
 def guarded():

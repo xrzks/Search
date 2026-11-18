@@ -32,6 +32,30 @@ closes", as Firefox's Cookie AutoDelete does.
 
 Newest first. Each entry: what changed, why, and the files it touches.
 
+**The fork's own identity** (2026-11-18). The bundle identifier is
+`io.github.xrzks.search` instead of upstream's `com.officecommun.search`,
+and the folder in Application Support is "Search Fork" instead of "Search",
+so the fork and upstream keep their settings, WebKit data and keychain items
+apart and can be installed side by side. The first run under the new
+identifier brings the old one's over before anything else starts (`Launch`,
+now the app's entry point, in place of `@main` on `SearchApp`): the settings
+are copied, keys the new domain already has standing; WebKit's data
+(`~/Library/WebKit/…`, `~/Library/HTTPStorages/…` and its cookies file) and
+the Application Support folder are moved, and whatever test runs of the new
+build left in the new places goes to the Bin first. Once only, marked by
+`identity.carried`. Caches stay behind. macOS's own choices are per
+identifier and don't follow: Search has to be chosen as the default browser
+again, and camera, microphone, location and Contacts are asked about again.
+Keychain services are named after the new identifier (AI keys, the proxy
+password, the bench's mark); none of these could be kept by an ad-hoc build
+before either. Test worlds keep their `com.officecommun.search.test.*`
+suites. `Search.passkeys.entitlements` still names upstream's team and
+identifier; it is only used with upstream's provisioning profile, which the
+fork doesn't have. `Identity.swift` (new), `App.swift`, `Store.swift`
+(`folder`, `ownContainer`), `AI.swift`, `Proxy.swift`, `Bench.swift`,
+`build.sh` (`BUNDLE_ID`), `fresh.sh`, `bench-mcp`, `Tests/bench_mcp.py`,
+`Tests/split_view.py`
+
 **No "On this Mac" AI** (2026-11-18). The AI add-on's own model ran in an
 engine upstream's feed offered, signed by Office Commun's team and checked
 against it; with the updater gone nothing offered it, and a fork build
