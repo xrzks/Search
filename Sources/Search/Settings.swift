@@ -1320,11 +1320,11 @@ struct SettingsPanel: View {
         if let current = draft {
             HStack(spacing: 8) {
                 // Plainly examples, not an entry already there (idea 810):
-                // "word" and "address", in italics, with "e.g.".
+                // "@word" and "address", in italics, with "e.g.".
                 TextField("", text: Binding(
                     get: { current.keyword },
                     set: { draft?.keyword = $0 }
-                ), prompt: Text("word").italic())
+                ), prompt: Text("@word").italic())
                 .textFieldStyle(.plain)
                 .frame(width: 50)
                 Text("→").foregroundStyle(Palette.muted)
@@ -1350,7 +1350,7 @@ struct SettingsPanel: View {
                 // Clicked, a saved shortcut opens in the editor to be
                 // changed, rather than deleted and written again.
                 HStack(spacing: 8) {
-                    Text(entry.keyword)
+                    Text("@" + entry.word)
                         .frame(width: 50, alignment: .leading)
                     Text("→").foregroundStyle(Palette.muted)
                     Text(entry.template)
@@ -1393,14 +1393,14 @@ struct SettingsPanel: View {
         if draft.keyword.isEmpty, draft.template.isEmpty {
             return "Type a word, like yt, then the site's search address with %s where the words you type go"
         }
-        return draftProblem ?? "\(draft.keyword.trimmingCharacters(in: .whitespacesAndNewlines)) will search \(draft.name)"
+        return draftProblem ?? "@\(draft.word) will search \(draft.name)"
     }
 
     private func saveDraft() {
         guard let current = draft, draftProblem == nil else { return }
         let saved = Keyword(
             id: current.id,
-            keyword: current.keyword.trimmingCharacters(in: .whitespacesAndNewlines),
+            keyword: current.word,
             template: Keyword.address(current.template)
         )
         // One being changed keeps its place in the list.

@@ -28,22 +28,24 @@ def main():
     try:
         # Always there since 24 Oct 2026, an old "off" on disk included.
         sv.setup(**{"search.sites": False}); sv.launch()
-        field("red"); time.sleep(0.3)
-        t.ok("always on: red offers Reddit, an old off notwithstanding", site()["offer"] == "Reddit", site()["offer"])
+        field("@red"); time.sleep(0.3)
+        t.ok("always on: @red offers Reddit, an old off notwithstanding", site()["offer"] == "Reddit", site()["offer"])
         site("esc")
         sv.quit()
         sv.launch()
         sv.page("start")
-        for typed, want in [("red", "Reddit"), ("yout", "YouTube"), ("yt", "YouTube"), ("wiki", "Wikipedia"),
-                            ("gh", "GitHub"), ("chat", "ChatGPT"), ("twi", "X"), ("stack", "Stack Overflow"),
-                            ("x", ""), ("red panda", ""),
+        for typed, want in [("@red", "Reddit"), ("@yout", "YouTube"), ("@yt", "YouTube"), ("@wiki", "Wikipedia"),
+                            ("@gh", "GitHub"), ("@chat", "ChatGPT"), ("@twi", "X"), ("@stack", "Stack Overflow"),
+                            ("@x", "X"), ("@red panda", ""),
+                            # Without the @ a word is a search, never a site.
+                            ("red", ""), ("yt", ""), ("reddit", ""),
                             # The best site, not the first: "goo" + Tab was Google Maps (X, 26 Oct 2026).
-                            ("goo", "Google"), ("goog", "Google"), ("google", "Google"),
-                            ("google m", "Google Maps"), ("maps", "Google Maps"), ("op", "ChatGPT")]:
+                            ("@goo", "Google"), ("@goog", "Google"), ("@google", "Google"),
+                            ("@google m", "Google Maps"), ("@maps", "Google Maps"), ("@op", "ChatGPT")]:
             field(typed); time.sleep(0.2)
             got = site()["offer"]
             t.ok(f"typing {typed!r} offers {want or 'nothing'}", got == want, got)
-        field("red"); time.sleep(0.2)
+        field("@red"); time.sleep(0.2)
         s = site("tab")
         t.ok("Tab: Reddit in the field, the word let go", s["took"] and s["chip"] == "Reddit" and s["typed"] == "", s)
         field("coffee beans"); time.sleep(0.2)
@@ -54,10 +56,10 @@ def main():
         # around the words: its search, with them in it, is what counts.
         went = s["address"] + s["pending"]
         t.ok("Return searches Reddit, the chip goes", "reddit.com/search/" in went and ("q=coffee%20beans" in went or "q=coffee+beans" in went) and s["chip"] == "", s)
-        field("yout"); time.sleep(0.2); site("tab")
+        field("@yout"); time.sleep(0.2); site("tab")
         s = site("delete")
         t.ok("⌫ in the empty field takes the site out", s["chip"] == "" and s["editing"], s)
-        field("gh"); time.sleep(0.2); site("tab")
+        field("@gh"); time.sleep(0.2); site("tab")
         s = site("esc")
         t.ok("Esc takes the site out, the field stays", s["chip"] == "" and s["editing"], s)
         site("esc")
@@ -68,35 +70,35 @@ def main():
         s = site("learn", page="https://duckduckgo.com/", description="https://duckduckgo.com/opensearch.xml")
         learned = s["learned"]
         t.ok("a site's own description: it joins the list", learned and learned[0][1] == "duckduckgo.com" and "%s" in learned[0][2], learned)
-        field("duckd"); time.sleep(0.2)
+        field("@duckd"); time.sleep(0.2)
         t.ok("…and is offered by its address", site()["offer"] == "duckduckgo.com", site()["offer"])
         site("esc"); site("forget")
         # A learned site is named and matched by its address only, never by
         # the name its description gives itself ("Google", a bank's).
         s = site("adopt", host="lookalike.example", template="https://lookalike.example/?q=%s")
         t.ok("a learned site is named by its address", s["learned"] and s["learned"][0][0] == "lookalike.example", s["learned"])
-        for typed in ["goo", "kag", "chase"]:
+        for typed in ["@goo", "@kag", "@chase"]:
             field(typed); time.sleep(0.2)
             t.ok(f"typing {typed!r} never offers the learned site", site()["offer"] != "lookalike.example", site()["offer"])
             site("esc")
-        field("looka"); time.sleep(0.2)
+        field("@looka"); time.sleep(0.2)
         t.ok("typing its address offers it, by its address", site()["offer"] == "lookalike.example", site()["offer"])
         site("esc")
         # Visits weigh in: a site visited far more wins over a shorter name,
         # but a part of a site never outweighs the site (google.com/maps).
         sv.cmd({"do": "history", "take": "https://www.google.com/maps/place/x", "count": 50})
-        field("goo"); time.sleep(0.2)
+        field("@goo"); time.sleep(0.2)
         t.ok("google.com/maps visited 50 times: 'goo' is still Google", site()["offer"] == "Google", site()["offer"])
         site("esc")
         site("adopt", host="redcorner.example", template="https://redcorner.example/?q=%s")
-        field("red"); time.sleep(0.2)
+        field("@red"); time.sleep(0.2)
         t.ok("a learned site never visited: 'red' is still Reddit", site()["offer"] == "Reddit", site()["offer"])
         site("esc")
         sv.cmd({"do": "history", "take": "https://redcorner.example/", "count": 30})
-        field("red"); time.sleep(0.2)
+        field("@red"); time.sleep(0.2)
         t.ok("visited 30 times, Reddit never: 'red' is the learned site", site()["offer"] == "redcorner.example", site()["offer"])
         site("esc")
-        field("reddit"); time.sleep(0.2)
+        field("@reddit"); time.sleep(0.2)
         t.ok("'reddit', its whole name, is Reddit however often the other", site()["offer"] == "Reddit", site()["offer"])
         site("esc")
         s = site("adopt", host="foo.github.io", template="https://github.io/?q=%s")

@@ -1,8 +1,9 @@
 import Foundation
 
-// A shortcut typed before the words: "yt cats" goes straight to YouTube's
-// search, whatever the default engine is. Firefox calls these keyword
-// bookmarks; there is no bookmark here, only the word and where it sends you.
+// A shortcut typed before the words, after an @: "@yt cats" goes straight to
+// YouTube's search, whatever the default engine is, and "yt cats" is a search.
+// Firefox calls these keyword bookmarks; there is no bookmark here, only the
+// word and where it sends you.
 
 struct Keyword: Codable, Identifiable, Equatable {
     let id: UUID
@@ -19,13 +20,19 @@ struct Keyword: Codable, Identifiable, Equatable {
     /// the same way Engine.name(custom:) does for the one default engine.
     var name: String { Engine.bareHost(of: template) ?? template }
 
-    /// `typed` starts with this keyword, a space, and something after it —
-    /// the words to search with. Nil if the keyword is unset, there's no
-    /// space, the word before it doesn't match, or nothing follows.
-    private func matches(_ typed: String) -> String? {
+    /// The word as typed after the @, whether or not it was saved with one.
+    var word: String {
         let word = keyword.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !word.isEmpty, let space = typed.firstIndex(of: " ") else { return nil }
-        guard typed[..<space].caseInsensitiveCompare(word) == .orderedSame else { return nil }
+        return word.hasPrefix("@") ? String(word.dropFirst()) : word
+    }
+
+    /// `typed` starts with @, this keyword, a space, and something after it —
+    /// the words to search with. Nil if the keyword is unset, there's no @ or
+    /// no space, the word before it doesn't match, or nothing follows.
+    private func matches(_ typed: String) -> String? {
+        guard !word.isEmpty, typed.hasPrefix("@"), let space = typed.firstIndex(of: " ") else { return nil }
+        guard typed[typed.index(after: typed.startIndex)..<space].caseInsensitiveCompare(word) == .orderedSame
+        else { return nil }
         let rest = typed[typed.index(after: space)...].trimmingCharacters(in: .whitespacesAndNewlines)
         return rest.isEmpty ? nil : rest
     }
@@ -69,11 +76,12 @@ struct Keyword: Codable, Identifiable, Equatable {
     /// Why `word` and `template` can't be saved alongside `keywords` yet, in
     /// a line Settings can show — or nil when they can.
     static func problem(word: String, template: String, among keywords: [Keyword]) -> String? {
-        let word = word.trimmingCharacters(in: .whitespacesAndNewlines)
-        if word.isEmpty { return "A word to type first, like yt" }
+        let word = Keyword(keyword: word).word
+        if word.isEmpty { return "A word to type after @, like yt" }
         if word.contains(where: \.isWhitespace) { return "One word, with no spaces in it" }
-        if let taken = keywords.first(where: { $0.keyword.caseInsensitiveCompare(word) == .orderedSame }) {
-            return "\(taken.keyword) already goes to \(taken.name)"
+        if word.contains("@") { return "One @, before the word" }
+        if let taken = keywords.first(where: { $0.word.caseInsensitiveCompare(word) == .orderedSame }) {
+            return "@\(taken.word) already goes to \(taken.name)"
         }
         guard accepts(address(template)) else {
             return "An http or https address with %s once, where the words go"

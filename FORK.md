@@ -31,6 +31,17 @@ came from, or nothing, not the whole address of the page.
 
 Newest first. Each entry: what changed, why, and the files it touches.
 
+**Site search after an @** (2026-11-18). Typing the start of a site's name
+offered that site's search, and a word from Site shortcuts sent what followed
+to its site, so "red" or "yt cats" never reached the engine as typed. Both now
+take an @ in front: "@red" then Tab searches Reddit, "@yt cats" goes to
+YouTube, and "red" or "yt cats" is a search. With the @ saying so, one letter
+is enough ("@x"). Shortcuts are saved and listed without their own @, and one
+saved with it still works. `SiteSearch.swift` (`match`), `Keyword.swift`
+(`word`, `matches`, `problem`), `Settings.swift`, `SettingsIndex.swift`,
+`Tests/SearchTests/SiteSearchTests.swift`, `Tests/SearchTests/EngineSuggestTests.swift`,
+`Tests/site_search.py`, `Tests/site_search_suggestions.py`
+
 **Less Office Commun** (2026-11-18). The fork keeps the name Search, but two
 things still pointed at Office Commun. The AI sign-in's callback, which Search
 takes before it loads, was on `officecommun.com`; it is now

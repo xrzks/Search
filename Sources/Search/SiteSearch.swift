@@ -1,13 +1,14 @@
 import Foundation
 
 // Search a site from the address field, as in Arc (Settings › General):
-// type the start of a site's name — "red", "yout", "chat" — and the list
-// offers "Search Reddit"; Tab puts the site in the field as a small chip,
+// type @ and the start of a site's name — "@red", "@yout", "@chat" — and the
+// list offers "Search Reddit"; Tab puts the site in the field as a small chip,
 // and what is typed after it goes to that site's search. A short list of
 // popular sites comes built in; a site you have been to that says where its
 // search is (OpenSearch, as Chrome reads it) joins it by itself. Your own
-// words ("yt cats", Settings › General › Site shortcuts) go on working
-// as before, whether this is on or off.
+// words ("@yt cats", Settings › General › Site shortcuts) go on working
+// as before, whether this is on or off. Without the @ nothing is offered:
+// "red" is a search, not Reddit.
 
 struct SearchSite: Codable, Identifiable, Equatable {
     var id: String { host }
@@ -80,8 +81,8 @@ enum SiteSearch {
         }
     }
 
-    /// The site the words typed so far begin the name of, if any, two
-    /// letters at least. A built-in one by the start of its name, its
+    /// The site the words typed so far begin the name of, if any: after an
+    /// @, a letter at least ("@yt", "@red"). A built-in one by the start of its name, its
     /// address or one of its other names; a site shortcut from Settings by
     /// its keyword; a learned one by the start of its address only — never
     /// by the name it gives itself, which could be anyone's ("Google", a
@@ -99,8 +100,9 @@ enum SiteSearch {
     /// ones only, so no profile's field says where another has been.
     static func match(_ typed: String, learnedToo: Bool = true, keywords: [Keyword] = [],
                       visits: ([SearchSite]) -> [String: Int] = { _ in [:] }) -> SearchSite? {
-        let word = typed.lowercased().split(whereSeparator: \.isWhitespace).joined(separator: " ")
-        guard word.count >= 2, !word.contains("/") else { return nil }
+        guard typed.hasPrefix("@") else { return nil }
+        let word = typed.dropFirst().lowercased().split(whereSeparator: \.isWhitespace).joined(separator: " ")
+        guard !word.isEmpty, !word.contains("/"), !word.contains("@") else { return nil }
         let spaced = word.contains(" ")
         func names(_ site: SearchSite) -> [String] {
             if spaced { return site.name.contains(" ") ? [site.name.lowercased()] : [] }
@@ -115,7 +117,7 @@ enum SiteSearch {
             found.append(Found(site: site, length: length, whole: fits.contains(word), builtIn: true))
         }
         for keyword in keywords where Keyword.accepts(keyword.template) {
-            let key = keyword.keyword.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            let key = keyword.word.lowercased()
             let host = keyword.name
             let name = host.split(separator: ".").first.map { $0.prefix(1).uppercased() + $0.dropFirst().lowercased() } ?? key
             let site = SearchSite(
