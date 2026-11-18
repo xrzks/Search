@@ -9248,6 +9248,28 @@ extension Browser: WKNavigationDelegate, WKUIDelegate {
             return
         }
 
+        // Campaign tags (Settings › Privacy › Remove campaign tags): the page
+        // loads at the address Copy Clean Link would give, without utm_ and
+        // the rest of CleanLink's list. The page only, and only a plain GET
+        // going somewhere new: not a frame, a form, Back or Reload. Should
+        // the site send the clean address straight back to the tagged one
+        // before the page arrives, the tagged one is let through, rather
+        // than going round forever.
+        if prefs.removesCampaignTags, action.targetFrame?.isMainFrame == true,
+           ["http", "https"].contains(scheme), (action.request.httpMethod ?? "GET") == "GET",
+           action.navigationType != .backForward, action.navigationType != .reload,
+           let tab = popupTab(for: webView) {
+            let clean = CleanLink.clean(url)
+            if clean != url, tab.untagged?.tagged != url {
+                decisionHandler(.cancel)
+                tab.untagged = (url, clean)
+                var request = action.request
+                request.url = clean
+                webView.load(request)
+                return
+            }
+        }
+
         // The next document gets this site's stylesheet of hidden things,
         // decided here because here is the last moment before it loads.
         // A peek's or a small window's page as well, which is in no row:
@@ -10271,6 +10293,7 @@ extension Browser: WKNavigationDelegate, WKUIDelegate {
         if let tab = certificateTab(for: webView) { dropCertificateAsks(for: tab.id) }
         if websitePopup { cancelCapture() }
         popupTab(for: webView)?.popupGesture.clear()
+        popupTab(for: webView)?.untagged = nil
         guard let tab = tab(for: webView) else {
             // A page that arrived in a tab of another space, a link's still
             // loading as you went there: the tab's page is this one all the

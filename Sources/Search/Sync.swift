@@ -77,6 +77,7 @@ enum SyncSettings {
         raw("tabs.newPlace", \.newTabPlace),
         coded("tabs.shortcuts", \.showsTabShortcuts),
         coded("shield", \.shielded),
+        coded("privacy.campaignTags", \.removesCampaignTags),
         coded("privacy.clickIDs", \.removesClickIDs),
         coded("privacy.gpc", \.sendsPrivacySignal),
         coded("bookmarks.bar", \.bookmarksBar),
@@ -89,7 +90,7 @@ enum SyncSettings {
         "look", "glyph", "search.engine", "search.custom", "search.customSuggest", "search.suggest",
         "search.keywords", "spaces",
         "pins.list", "pins.home", "tabs.close.after", "tabs.newPlace", "tabs.shortcuts", "shield",
-        "privacy.clickIDs", "privacy.gpc", "bookmarks.bar", "bookmarks.side", "quit.confirm",
+        "privacy.campaignTags", "privacy.clickIDs", "privacy.gpc", "bookmarks.bar", "bookmarks.side", "quit.confirm",
     ]
 
     /// A setting whose switch was taken out: read and sent as before, never
