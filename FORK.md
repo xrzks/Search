@@ -19,42 +19,44 @@ clean.
 What the fork plans to build, roughly in order. When something lands, its entry
 moves to [Changes](#changes-from-upstream) with the files it touches.
 
-**Forget sites between launches.** Sites you only pass through keep their
-cookies, storage and cache until you clear them, and Settings › Privacy › Clear
-clears every site at once, signing you out of everything. The plan: when Search
-launches, before any tab loads, everything `WKWebsiteDataStore` keeps for a site
-goes — cookies, local storage, IndexedDB, service workers and cache — unless the
-site is on a list of sites to keep. It goes through the records of each
-profile's and each space's store, as Clear's Cookies and sign-ins does today,
-every profile and not only the ones with a window open. Clearing at launch
-rather than at quit keeps quitting instant and covers a crash or a force quit
-the same way; no site can see the data while Search isn't running. It is on by
-default, with a switch in Settings › Privacy. Private tabs already keep nothing.
-
-The list is in Settings › Privacy, and an entry is typed as for Send links to a
-space in Settings › Spaces & Pins: "notion.so", "https://www.notion.so/x" or
-"*.notion.so", kept as the site "notion.so", www. dropped. An IP address is
-taken as it is, and a name only with a dot or as localhost. A site's data stays
-when an entry and the site are the same, or one is a subdomain of the other
-(`SpaceRoutes.same`): WebKit keeps a site's data under its registrable domain,
-so typing mail.notion.so keeps notion.so's data, and typing notion.so keeps
-mail.notion.so's. Clear's Cookies and sign-ins and Cache go through the list
-too, leaving the sites it keeps and saying so, and Clear History leaves the list
-alone: it is a choice about sites, not a record of where you have been. The site
-card, which a click on the tab you are on shows under its address, gets a switch
-beside Block Ads and Trackers and Keep This Site Awake: Keep This Site's
-Sign-Ins, on while the list keeps the site, so one click adds it and another
-takes it off. A private tab's card leaves it out, since nothing is kept there.
-A line under the list says that a site you sign in to through another, Google
-or Microsoft, needs that one kept too.
-
-Maybe, later: forget a site when its last tab closes as well, for a Search left
-running for weeks, where forgetting only at launch keeps every site passed
-through for as long as it runs.
+**Forget a site when its last tab closes.** Sites are forgotten only when
+Search opens (see [Forget sites between launches](#changes-from-upstream)),
+so a Search left running for weeks keeps every site passed through for as
+long as it runs. Maybe, later: forget a site when its last tab closes as well.
 
 ## Changes from upstream
 
 Newest first. Each entry: what changed, why, and the files it touches.
+
+**Forget sites between launches** (2026-11-18). Sites you only pass through
+kept their cookies, storage and cache until you cleared them, and Clear's
+Cookies and sign-ins clears every site at once, signing you out of
+everything. Now, when Search opens, before SwiftUI starts and so before any
+tab loads, everything `WKWebsiteDataStore` keeps for a site goes (cookies,
+local storage, IndexedDB, service workers, caches) unless the site is on a
+list of sites to keep: every profile's store and every space's own, not only
+the ones with a window open. The main run loop is run until WebKit answers, at
+most ten seconds. At launch rather than at quit, so quitting stays instant and
+a crash or a force quit forgets just the same. Settings › Privacy › Clear ›
+Forget sites when Search opens, on by default (off in a test run unless
+turned on), and the list under it, typed as for Send links to a space:
+"notion.so", "https://www.notion.so/x" or "*.notion.so" are kept as
+"notion.so". A record, which WebKit names by registrable domain, is kept when
+an entry and it are one site or one is a subdomain of the other
+(`SpaceRoutes.same`); an IP address only as it is, since `same` alone took
+10.0.0.1 for a subdomain of 0.0.1. A line under the list says that a site you
+sign in to through Google or Microsoft needs that one kept too. Clear's
+Cookies and sign-ins and Cache, in Settings and in History, leave the sites
+kept and say so; Clear History leaves the list alone. The site card has Keep
+This Site's Sign-Ins, after Block Ads and Trackers, on while the list keeps
+the site: one click adds its registrable domain, another takes off every
+entry that keeps it. Not in a private tab's card, nor with the switch off. The
+switch and the list sync with Settings. The bench's `clear` verb (test runs
+only) clears sites or the cache as the Settings buttons do. `Forget.swift`
+(new), `Identity.swift` (`Launch`), `Browser.swift` (`clearSites`,
+`clearCache`, `clear`), `Prefs.swift`, `Settings.swift`, `SettingsIndex.swift`,
+`Recall.swift`, `SiteCard.swift` (`kept`), `Sync.swift`, `Bench.swift`,
+`Tests/SearchTests/ForgetTests.swift` (new), `Tests/forget_sites.py` (new)
 
 **A space's empty tab makes way** (2026-11-18). A space with nothing open shows
 an empty tab beside its pins, and a page opened there, in front or behind,

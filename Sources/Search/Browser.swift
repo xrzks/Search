@@ -1959,14 +1959,11 @@ final class Browser: NSObject, ObservableObject {
 
     /// Cookies, caches, local storage — everything a site left on this Mac,
     /// in every space. Clearing it signs you out of everything, which is
-    /// the point.
-    func clearSites() {
-        let types = WKWebsiteDataStore.allWebsiteDataTypes()
-        // This profile's: another profile is another browser.
-        for store in Spaces.stores(of: profileID) {
-            store.removeData(ofTypes: types, modifiedSince: .distantPast) {}
-        }
-        announce("Signed out of everything")
+    /// the point; but for the sites you keep (see Forget.swift), which it
+    /// says it left.
+    func clearSites(done: (() -> Void)? = nil) {
+        clear(WKWebsiteDataStore.allWebsiteDataTypes(), said: "Signed out of everything",
+              keeping: { "Signed out of everything but \($0)" }, done: done)
     }
 
     /// Only what was fetched to draw pages, not what identifies you: the
@@ -1976,20 +1973,40 @@ final class Browser: NSObject, ObservableObject {
     /// workers themselves stay, with the push subscriptions and offline data
     /// they hold: one that finds its copy gone fetches the page again, and
     /// Cookies and sign-ins removes them as it removes everything.
-    func clearCache(then done: @escaping () -> Void = {}) {
+    func clearCache(done: (() -> Void)? = nil) {
         let types: Set<String> = [
             WKWebsiteDataTypeDiskCache,
             WKWebsiteDataTypeMemoryCache,
             WKWebsiteDataTypeOfflineWebApplicationCache,
             WKWebsiteDataTypeFetchCache,
         ]
-        let cleared = DispatchGroup()
-        for store in Spaces.stores(of: profileID) {
-            cleared.enter()
-            store.removeData(ofTypes: types, modifiedSince: .distantPast) { cleared.leave() }
+        clear(types, said: "Cache cleared", keeping: { "Cache cleared, but not for \($0)" }, done: done)
+    }
+
+    /// This profile's: another profile is another browser.
+    /// `keeping`: what is said with the sites kept that had anything.
+    private func clear(_ types: Set<String>, said: String, keeping: @escaping (String) -> String, done: (() -> Void)?) {
+        let stores = Spaces.stores(of: profileID)
+        let kept = prefs.keptSites
+        guard !kept.isEmpty else {
+            let cleared = DispatchGroup()
+            for store in stores {
+                cleared.enter()
+                store.removeData(ofTypes: types, modifiedSince: .distantPast) { cleared.leave() }
+            }
+            cleared.notify(queue: .main) { done?() }
+            announce(said)
+            return
         }
-        cleared.notify(queue: .main, execute: done)
-        announce("Cache cleared")
+        Task { @MainActor in
+            let held = await Forget.sweep(stores, types: types, keeping: kept)
+            switch held.count {
+            case 0: announce(said)
+            case 1: announce(keeping("\(held.first!), which you keep"))
+            default: announce(keeping("the \(held.count) sites you keep"))
+            }
+            done?()
+        }
     }
 
     /// `space`: nil for everywhere you have been, as the History menu and

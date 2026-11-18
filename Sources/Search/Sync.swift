@@ -82,6 +82,8 @@ enum SyncSettings {
         coded("privacy.campaignTags", \.removesCampaignTags),
         coded("privacy.clickIDs", \.removesClickIDs),
         coded("privacy.gpc", \.sendsPrivacySignal),
+        coded("forget.sites", \.forgetsSites),
+        coded("forget.keep", \.keptSites),
         coded("bookmarks.bar", \.bookmarksBar),
         coded("bookmarks.side", \.bookmarksInSidebar),
         coded("quit.confirm", \.confirmsQuit),
@@ -92,7 +94,8 @@ enum SyncSettings {
         "look", "glyph", "search.engine", "search.custom", "search.customSuggest", "search.suggest",
         "search.keywords", "spaces",
         "pins.list", "pins.home", "tabs.close.after", "tabs.newPlace", "tabs.shortcuts", "shield",
-        "shield.easyprivacy", "shield.easylist", "privacy.campaignTags", "privacy.clickIDs", "privacy.gpc", "bookmarks.bar", "bookmarks.side", "quit.confirm",
+        "shield.easyprivacy", "shield.easylist", "privacy.campaignTags", "privacy.clickIDs", "privacy.gpc", "forget.sites", "forget.keep",
+        "bookmarks.bar", "bookmarks.side", "quit.confirm",
     ]
 
     /// A setting whose switch was taken out: read and sent as before, never

@@ -155,11 +155,11 @@ struct HistoryPanel: View {
                     }
                 }
                 Rule()
-                Line("Cookies and sign-ins", "Signs you out of every site") {
+                Line("Cookies and sign-ins", browser.prefs.keptSites.isEmpty ? "Signs you out of every site" : "Signs you out of every site but the ones you keep") {
                     Pill("Sign out of everything") { browser.clearSites() }
                 }
                 Rule()
-                Line("Cache", "Only what was fetched to draw pages") {
+                Line("Cache", browser.prefs.keptSites.isEmpty ? "Only what was fetched to draw pages" : "Only what was fetched to draw pages, but for the sites you keep") {
                     Pill("Clear") { browser.clearCache() }
                 }
             }

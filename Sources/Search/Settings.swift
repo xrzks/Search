@@ -716,6 +716,8 @@ struct SettingsPanel: View {
         case "search.suggest": return suggestDetail
         case "search.keywords": return keywordDetail
         case "passwords.save": return savingDetail
+        case "clear.cookies": return prefs.keptSites.isEmpty ? item.detail : "Signs you out of every site but the ones you keep"
+        case "clear.cache": return prefs.keptSites.isEmpty ? item.detail : "Only what was fetched to draw pages, but for the sites you keep"
         case "passkeys":
             return !prefs.passkeysPossible
                 ? "Needs an Apple entitlement this build doesn't have"
@@ -1142,6 +1144,7 @@ struct SettingsPanel: View {
         case "privacy.httpsFirst": Switch(on: $prefs.triesHTTPSFirst)
         case "notifications.ask": Switch(on: $prefs.siteNotifications)
         case "privacy.forget": Pill("Forget choices") { browser.forgetCaptureChoices() }
+        case "forget.sites": Switch(on: $prefs.forgetsSites)
         case "clear.history": Pill("Clear") { browser.clearHistory() }
         case "clear.cookies": Pill("Sign out of everything") { browser.clearSites() }
         case "clear.cache": Pill("Clear") { browser.clearCache() }
@@ -1255,6 +1258,12 @@ struct SettingsPanel: View {
         case "profiles":
             if !searched {
                 ProfileList(browser: browser)
+                    .under()
+            }
+        case "forget.sites":
+            // Clear goes through it too, so it is there with the switch off.
+            if !searched {
+                KeptSiteList(prefs: prefs)
                     .under()
             }
         case "spaces.links":
