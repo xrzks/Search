@@ -914,3 +914,14 @@ final class DevToolsMemoryDefaults: UserDefaults, @unchecked Sendable {
     override func removePersistentDomain(forName domainName: String) {}
     override func setPersistentDomain(_ domain: [String: Any], forName domainName: String) {}
 }
+
+/// Why a download was refused, said in Settings. Upstream keeps it with the
+/// AI engine (AIEngine.swift), which this fork doesn't have; only its
+/// failure is used here.
+enum AIDownload {
+    struct Failure: LocalizedError {
+        let why: String
+        init(_ why: String) { self.why = why }
+        var errorDescription: String? { why }
+    }
+}

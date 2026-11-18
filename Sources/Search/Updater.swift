@@ -7,7 +7,7 @@ import Security
 // nothing is fetched in the background, and no bundle is ever swapped in:
 // a newer Search is a rebuild. What is left is what other parts still ask
 // for — the version and build (Links, WhatsNew, Settings), the team's
-// Developer ID requirement (AIEngine, DevToolsPackages) and a relaunch
+// Developer ID requirement (DevToolsPackages) and a relaunch
 // (DevToolsPackages' Restart).
 
 enum Updater {
@@ -40,7 +40,8 @@ enum Updater {
         NSApp.terminate(nil)
     }
 
-    /// The team that signs Office Commun's releases, and the AI engine.
+    /// The team that signs Office Commun's releases, and the developer
+    /// tools packages.
     static let team = "7BYKA895MC"
 
     /// The requirement every Developer ID program from this team meets, the
