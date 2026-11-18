@@ -17,7 +17,16 @@ upstream documents are left as upstream has them, so merges stay clean.
 What the fork plans to build, roughly in order. When something lands, its entry
 moves to [Changes](#changes-from-upstream) with the files it touches.
 
-Nothing at the moment.
+**Forget a site when you're done with it.** Settings › Privacy › Clear only
+clears every site at once, and nothing is cleared at quit. The plan: a list
+of sites whose cookies and storage are kept (the ones you sign in to), and
+at quit every other site's data goes, through `WKWebsiteDataStore`'s records
+for each profile's and space's store, as Clear's Cookies and sign-ins does
+today for all of them. Private tabs already keep nothing. To decide: whether
+the kept list is typed in Settings or taken from the site card ("Keep this
+site's sign-ins"), whether a site you are signed in to in an open tab is
+spared at quit, and whether "at quit" should also be "when its last tab
+closes", as Firefox's Cookie AutoDelete does.
 
 ## Changes from upstream
 
