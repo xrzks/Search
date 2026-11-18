@@ -278,7 +278,7 @@ struct KeychainVault: AgentVault {
         return value as? String
     }()
 
-    static let agents = KeychainVault(service: "com.officecommun.search.agents.trusted",
+    static let agents = KeychainVault(service: Identity.bundle + ".agents.trusted",
                                       account: Store.world.map { "trusted (\($0))" } ?? "trusted")
 
     private var query: [String: Any] {

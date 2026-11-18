@@ -177,15 +177,15 @@ goes to the Bin first. Once only, marked by `identity.carried`. Caches stay
 behind. macOS's own choices are per identifier and don't follow: Search has to
 be chosen as the default browser again, and camera, microphone, location and
 Contacts are asked about again. Keychain services are named after the new
-identifier (AI keys, the proxy password, the bench's and the agents' marks);
-none of these could be kept by an ad-hoc build before either. Test worlds keep
-their `com.officecommun.search.test.*` suites. `Search.passkeys.entitlements`
-still names upstream's team and identifier; it is only used with upstream's
-provisioning profile, which the fork doesn't have. `Identity.swift` (new),
-`App.swift`, `Store.swift` (`folder`, `ownContainer`), `AI.swift`,
-`Proxy.swift`, `Bench.swift`, `Prefs.swift` (`agentsMark`), `build.sh`
-(`BUNDLE_ID`), `fresh.sh`, `bench-mcp`, `Tests/bench_mcp.py`,
-`Tests/split_view.py`
+identifier (AI keys, the proxy password, the bench's and the agents' marks, the
+agents trusted with Always allow); none of these could be kept by an ad-hoc
+build before either. Test worlds keep their `com.officecommun.search.test.*`
+suites. `Search.passkeys.entitlements` still names upstream's team and
+identifier; it is only used with upstream's provisioning profile, which the fork
+doesn't have. `Identity.swift` (new), `App.swift`, `Store.swift` (`folder`,
+`ownContainer`), `AI.swift`, `Proxy.swift`, `Bench.swift`, `Prefs.swift`
+(`agentsMark`), `AgentTrust.swift` (`agents`), `build.sh` (`BUNDLE_ID`),
+`fresh.sh`, `bench-mcp`, `Tests/bench_mcp.py`, `Tests/split_view.py`
 
 **No "On this Mac" AI** (2026-11-18). The AI add-on's own model ran in an engine
 upstream's feed offered, signed by Office Commun's team and checked against it;
