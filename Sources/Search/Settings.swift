@@ -945,7 +945,7 @@ struct SettingsPanel: View {
     private var keywordEditor: some View {
         if let current = draft {
             HStack(spacing: 8) {
-                TextField("yt", text: Binding(
+                TextField("@yt", text: Binding(
                     get: { current.keyword },
                     set: { draft?.keyword = $0 }
                 ))
@@ -974,7 +974,7 @@ struct SettingsPanel: View {
                 // Clicked, a saved shortcut opens in the editor to be
                 // changed, rather than deleted and written again.
                 HStack(spacing: 8) {
-                    Text(entry.keyword)
+                    Text("@" + entry.word)
                         .frame(width: 50, alignment: .leading)
                     Text("→").foregroundStyle(Palette.muted)
                     Text(entry.template)
@@ -1017,14 +1017,14 @@ struct SettingsPanel: View {
         if draft.keyword.isEmpty, draft.template.isEmpty {
             return "A word, then the site's search address with %s where the words go"
         }
-        return draftProblem ?? "\(draft.keyword.trimmingCharacters(in: .whitespacesAndNewlines)) will search \(draft.name)"
+        return draftProblem ?? "@\(draft.word) will search \(draft.name)"
     }
 
     private func saveDraft() {
         guard let current = draft, draftProblem == nil else { return }
         let saved = Keyword(
             id: current.id,
-            keyword: current.keyword.trimmingCharacters(in: .whitespacesAndNewlines),
+            keyword: current.word,
             template: current.template.trimmingCharacters(in: .whitespacesAndNewlines)
         )
         // One being changed keeps its place in the list.

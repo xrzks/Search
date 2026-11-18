@@ -145,7 +145,8 @@ final class EngineSuggestTests: XCTestCase {
         browser.prefs.engineSuggests = true
         browser.prefs.engine = .google
         browser.prefs.keywords = [Keyword(keyword: "yt", template: "https://www.youtube.com/results?search_query=%s")]
-        XCTAssertNil(browser.engineQuestion(for: "yt cats"), "a shortcut's words go to its site, not the engine")
+        XCTAssertNil(browser.engineQuestion(for: "@yt cats"), "a shortcut's words go to its site, not the engine")
+        XCTAssertNotNil(browser.engineQuestion(for: "yt cats"), "without the @ it is a search")
         XCTAssertNotNil(browser.engineQuestion(for: "cats"))
     }
 
