@@ -884,7 +884,7 @@ struct SideBar: View {
     /// among them and the room after it, added up as rowsHeight adds up the
     /// column's own.
     private struct PreviewLine: Identifiable {
-        enum Kind { case pin(PinRowLine), heading(TabGroup), tab(Tab, group: TabGroup? = nil), keep, newTab }
+        enum Kind { case pin(PinRowLine), heading(TabGroup), tab(Tab, group: TabGroup? = nil), keep }
         let id: AnyHashable
         let kind: Kind
         let y: CGFloat
@@ -938,12 +938,6 @@ struct SideBar: View {
         }
         if keeps { add("keep", .keep, KeepLine.height) }
         for tab in rest { add(tab.id, .tab(tab), lines(tab) * rowHeight, front: tab.id == front) }
-        // The row that makes another, with its gap above it (newTab).
-        if let last = out.last {
-            out[out.count - 1] = PreviewLine(id: last.id, kind: last.kind, y: last.y, height: last.height, after: 0, front: last.front)
-            y -= last.after
-        }
-        add("new-tab", .newTab, rowHeight + SideBar.gap, after: 0)
         return (out, tints)
     }
 
@@ -978,8 +972,6 @@ struct SideBar: View {
                 .padding(.trailing, group.map(groupRowInset) ?? 0)
         case .keep:
             KeepLine(clears: false) {}
-        case .newTab:
-            newTab
         }
     }
 
@@ -1032,7 +1024,7 @@ struct SideBar: View {
         let headings = CGFloat(grouped.count) * (heading + SideBar.gap)
             + CGFloat(grouped.filter(\.isEmpty).count) * SideBar.gap
         let loose = CGFloat(rows.count) * (rowHeight + SideBar.gap) + CGFloat(pairs) * rowHeight + headings
-        return listBlock + loose + rowHeight + 8
+        return listBlock + loose + 8
     }
 
     /// The pinned rows' height: each row, or with pin folders each line,
@@ -1904,13 +1896,11 @@ struct SideBar: View {
         return true
     }
 
-    /// The pinned rows, the loose tabs and the row that makes another,
-    /// which scroll as one.
+    /// The pinned rows and the loose tabs, which scroll as one.
     private var rows: some View {
         VStack(alignment: .leading, spacing: 0) {
             listed
             loose
-            newTab
         }
     }
 
@@ -1926,22 +1916,6 @@ struct SideBar: View {
     private var agentCard: CGFloat { AgentStatus.cardHeight(row: rowHeight, auto: agents.session?.auto == true) }
     /// An agent's pill is showing in this window (AgentControl).
     private var agentHere: Bool { agents.shownIn == ObjectIdentifier(browser) }
-
-    @ViewBuilder
-    private var newTab: some View {
-        if icons {
-            Quiet(icon: "plus", title: "", height: rowHeight, size: prefs.sideTitle, centred: true) { browser.launch() }
-                .shortcutHelp("New Tab", "file.newTab")
-                // The column's menu on a right-click, as round it.
-                .overlay { RightClick(menu: columnMenu) }
-                .padding(.top, SideBar.gap)
-        } else {
-            Quiet(icon: "plus", title: "New tab", height: rowHeight, size: prefs.sideTitle) { browser.launch() }
-                .shortcutHelp("New Tab", "file.newTab")
-                .overlay { RightClick(menu: columnMenu) }
-                .padding(.top, SideBar.gap)
-        }
-    }
 
     /// The doors from one end of the column to the other, the top fading
     /// as the foot rises, and back: down once they no longer fit, up once
@@ -2643,48 +2617,6 @@ private struct SideRow: View, Equatable {
     }
 
     private var colour: Color { putAway ? ink.opacity(0.45) : ink }
-}
-
-/// A row that is an action rather than a page. Quiet until the pointer is on it.
-struct Quiet: View {
-    @Environment(\.greys) private var greys
-    let icon: String
-    let title: String
-    var height: CGFloat = 28
-    var size: CGFloat = 12.5
-    /// The icon alone, in the middle: the column of icons' new tab.
-    var centred = false
-    let act: () -> Void
-
-    @State private var hovering = false
-
-    var body: some View {
-        Button(action: act) {
-            HStack(spacing: 8) {
-                if centred { Spacer(minLength: 0) }
-                Image(systemName: icon)
-                    .font(.system(size: 10, weight: .medium))
-                    .frame(width: 15)
-                if !title.isEmpty {
-                    Text(title)
-                        .font(.system(size: size))
-                }
-                Spacer(minLength: 0)
-            }
-            .foregroundStyle(hovering ? Palette.ink.opacity(0.7) : greys.faint)
-            .padding(.leading, centred ? 0 : 10)
-            .frame(height: height)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: 9, style: .continuous)
-                    .fill(hovering ? greys.hover : .clear)
-            )
-            .contentShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
-        }
-        .buttonStyle(.plain)
-        .onHover { hovering = $0 }
-        .animation(Motion.quick, value: hovering)
-    }
 }
 
 /// The line between what is kept and the tabs that come and go, as Arc
