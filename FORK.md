@@ -111,10 +111,15 @@ mention `engine.sh`; they are left as upstream has them. `AIEngine.swift`,
 `Updater.swift`, `Bench.swift` and `bench` (the `ai engine` verb),
 `build.sh` (the appcast's engine), `Proxy.swift` (comment)
 
-**An install script** (2026-11-17). With the updater gone, `./install.sh`
-is how the fork is updated: it builds a release and puts it in
-`/Applications` (or the folder given) in place of the copy there, quitting
-that copy first and opening it again after. `install.sh` (new)
+**An install script** (2026-11-17, more on 2026-11-18). With the updater
+gone, `./install.sh` is how the fork is updated: it builds a release and
+puts it in `/Applications` (or the folder given) in place of the copy there,
+quitting that copy first and opening it again after. It installs a commit:
+with changes in the working tree other than Markdown, untracked files
+included, it stops unless given `--dirty`. `--test` runs `swift test` first
+and installs nothing if it fails. At the end it says the commit installed
+and how `build.sh` signed it (a Developer ID found in the keychain, or
+ad-hoc). `install.sh` (new)
 
 **Typed addresses follow Send links to a space** (2026-11-17). The rules in
 Settings › Spaces & Pins now also apply to an address typed into the field.

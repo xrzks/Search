@@ -5,17 +5,49 @@
 #
 #   ./install.sh                    build, then install into /Applications
 #   ./install.sh ~/Applications     the same, for this account only
+#   ./install.sh --test             run the unit tests first (swift test);
+#                                   a failure installs nothing
+#   ./install.sh --dirty            install with changes not yet committed
+#
+# What is installed is a commit: with changes in the working tree (anything
+# but Markdown), nothing is built unless --dirty says so, so the copy in
+# /Applications can always be named. The commit and the signature it got
+# are said at the end.
 #
 # A Search already running from there is quit first, and opened again once
 # the new copy is in.
 set -euo pipefail
 
 cd "$(dirname "$0")"
-DIR="${1:-/Applications}"
+TEST="" DIRTY="" DIR=""
+for arg in "$@"; do
+  case "$arg" in
+    --test) TEST=1 ;;
+    --dirty) DIRTY=1 ;;
+    -*) echo "usage: ./install.sh [--test] [--dirty] [FOLDER]" >&2; exit 1 ;;
+    *) [ -z "$DIR" ] || { echo "one folder at most" >&2; exit 1; }; DIR="$arg" ;;
+  esac
+done
+DIR="${DIR:-/Applications}"
 TARGET="$DIR/Search.app"
 BINARY="$TARGET/Contents/MacOS/Search"
 
 [ -d "$DIR" ] || { echo "no folder $DIR" >&2; exit 1; }
+
+# Changes that would go into the build, untracked files included: SwiftPM
+# compiles every file in Sources/, committed or not.
+CHANGES="$(git status --porcelain -- . ':!*.md')"
+if [ -n "$CHANGES" ] && [ -z "$DIRTY" ]; then
+  echo "not committed — commit first, or --dirty to install them anyway:" >&2
+  echo "$CHANGES" >&2
+  exit 1
+fi
+COMMIT="$(git rev-parse --short HEAD)"
+[ -n "$CHANGES" ] && COMMIT="$COMMIT + changes"
+
+if [ -n "$TEST" ]; then
+  swift test || { echo "tests failed: nothing installed" >&2; exit 1; }
+fi
 
 ./build.sh release
 
@@ -42,7 +74,13 @@ rm -rf "$NEW"
 ditto build/Search.app "$NEW"
 rm -rf "$TARGET"
 mv "$NEW" "$TARGET"
-echo "installed: $TARGET ($(defaults read "$TARGET/Contents/Info" CFBundleShortVersionString 2>/dev/null || echo "?"))"
+
+# How build.sh signed it: a Developer ID when the keychain has one (the
+# first found, unless SEARCH_SIGN_IDENTITY names one), ad-hoc otherwise.
+SIGNED="$(codesign -dv "$TARGET" 2>&1 | sed -n 's/^Authority=//p' | head -1)"
+VERSION="$(defaults read "$TARGET/Contents/Info" CFBundleShortVersionString 2>/dev/null || echo "?")"
+echo "installed: $TARGET ($VERSION, $COMMIT)"
+echo "signed:    ${SIGNED:-ad-hoc}"
 
 [ -n "$WAS_RUNNING" ] && open "$TARGET"
 exit 0
