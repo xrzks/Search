@@ -74,6 +74,7 @@ enum SyncSettings {
         coded("shield.easylist", \.blocksMoreAds),
         coded("privacy.campaignTags", \.removesCampaignTags),
         coded("privacy.clickIDs", \.removesClickIDs),
+        coded("privacy.screen", \.reportsCommonScreen),
         coded("privacy.gpc", \.sendsPrivacySignal),
         coded("forget.sites", \.forgetsSites),
         coded("forget.keep", \.keptSites),
@@ -85,7 +86,7 @@ enum SyncSettings {
     static let known: Set<String> = [
         "look", "glyph", "search.engine", "search.custom", "search.suggest", "search.keywords", "spaces",
         "pins.list", "pins.home", "tabs.close.after", "tabs.newPlace", "tabs.shortcuts", "shield",
-        "shield.easyprivacy", "shield.easylist", "privacy.campaignTags", "privacy.clickIDs", "privacy.gpc", "forget.sites", "forget.keep",
+        "shield.easyprivacy", "shield.easylist", "privacy.campaignTags", "privacy.clickIDs", "privacy.screen", "privacy.gpc", "forget.sites", "forget.keep",
         "bookmarks.bar", "quit.confirm",
     ]
 

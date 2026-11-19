@@ -800,6 +800,7 @@ struct SettingsPanel: View {
         case "sites.keep": Switch(on: Binding(get: { !prefs.keepsSignIns }, set: { prefs.keepsSignIns = !$0 }))
         case "privacy.clickIDs": Switch(on: $prefs.removesClickIDs)
         case "privacy.campaignTags": Switch(on: $prefs.removesCampaignTags)
+        case "privacy.screen": Switch(on: $prefs.reportsCommonScreen)
         case "privacy.gpc": Switch(on: $prefs.sendsPrivacySignal)
         case "notifications.ask": Switch(on: $prefs.siteNotifications)
         case "https.only": Switch(on: $prefs.httpsOnly)

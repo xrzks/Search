@@ -489,6 +489,14 @@ final class Preferences: ObservableObject {
             ClickIDs.on = removesClickIDs
         }
     }
+    /// Pages read a common screen size, not one made from the window (see
+    /// CommonScreen.swift). On unless turned off.
+    @Published var reportsCommonScreen: Bool {
+        didSet {
+            store.set(reportsCommonScreen, forKey: "privacy.screen")
+            CommonScreen.on = reportsCommonScreen
+        }
+    }
     /// Campaign tags (utm_ and the rest of CleanLink's list) taken off a
     /// page's address before it loads, as Copy Clean Link takes them off a
     /// copied one (see Browser.decide). On unless turned off.
@@ -1129,6 +1137,9 @@ final class Preferences: ObservableObject {
         removesClickIDs = removes
         ClickIDs.on = removes
         removesCampaignTags = store.object(forKey: "privacy.campaignTags") as? Bool ?? true
+        let common = store.object(forKey: "privacy.screen") as? Bool ?? true
+        reportsCommonScreen = common
+        CommonScreen.on = common
         forgetsSites = Forget.on
         keptSites = (store.array(forKey: Forget.keptKey) as? [String] ?? []).compactMap(SpaceRoutes.site)
         sendsSignIns = store.object(forKey: "extensions.credentialedFetch") as? Bool ?? true

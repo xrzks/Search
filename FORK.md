@@ -31,6 +31,24 @@ came from, or nothing, not the whole address of the page.
 
 Newest first. Each entry: what changed, why, and the files it touches.
 
+**A common screen size** (2026-11-19). A page reading `screen.width` and
+`height` was told the display's size as macOS scales it (1710×1112 on a
+15-inch MacBook Air), which says the Mac's model and how it is set. Safari's
+fingerprinting protection, which a WKWebView doesn't get, answers with the
+window, which is worse: Cover Your Tracks put a Safari window's 1407×1048 at 1
+in 183,324 browsers. Now a page reads the smallest of 1440×900, 1920×1080,
+2560×1440 and 3840×2160 that holds its window, picked again at each read, and
+the available area the same: a script in the page's own world, every frame,
+before the page's own. Not letterboxing: `innerWidth` and `outerWidth` are
+still the window's, as a page lays out by them, and CSS's `device-width` and a
+frame made without loading anything still read the display. Settings ›
+Privacy › Report a common screen size, on by default and always in a private
+tab, synced; a switch moved reaches a page from its next load.
+`window_frame.py` turns it off, as it checks `screenY` against the real
+screen. `CommonScreen.swift` (new), `Tab.swift` (`arm`), `Prefs.swift`,
+`Settings.swift`, `SettingsIndex.swift`, `Sync.swift`, `Bench.swift`,
+`Tests/common_screen.py` (new), `Tests/window_frame.py`
+
 **Extension pages with customized built-ins** (2026-11-18). An extension
 page may make a `<button>` or an `<input>` one of its own elements, written
 `<button is="select-button">` and defined with `customElements.define(…, {

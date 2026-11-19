@@ -4448,6 +4448,7 @@ final class Bench {
             // Settings › Privacy's two switches (see Privacy.swift).
             if let on = request["gpc"] as? Bool, Store.testing { browser.prefs.sendsPrivacySignal = on }
             if let on = request["clickids"] as? Bool, Store.testing { browser.prefs.removesClickIDs = on }
+            if let on = request["commonscreen"] as? Bool, Store.testing { browser.prefs.reportsCommonScreen = on }
             if let on = request["folded"] as? Bool { browser.folded = on }
             // The window's own full screen as the chrome sees it, without
             // the window going there: a test run never takes the screen.

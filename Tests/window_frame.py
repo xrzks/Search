@@ -11,7 +11,8 @@ and signs you out (#916). The last part opens a
 public Google Doc as Safari 26.3.1 would: Docs, on a Safari before 26.4, takes
 `outerWidth / innerWidth` for the zoom, and drew its canvas at a quarter of
 the screen's sharpness when the window read as having no size. It is skipped
-when Docs doesn't load.
+when Docs doesn't load. Report a common screen size is off here: `screenY`
+is checked against the real screen's height (see common_screen.py).
 """
 import re
 import sys
@@ -45,7 +46,7 @@ def docs(id, label):
     dpr = sv.cmd({"do": "eval", "id": id, "js": "devicePixelRatio"}).get("value")
     t.ok(f"{label}: the page at the screen's sharpness", all(abs(r - dpr) < 0.01 for r in ratios), (ratios, dpr))
 try:
-    sv.setup(); sv.launch()
+    sv.setup(**{"privacy.screen": False}); sv.launch()
     tab = sv.page("a"); sv.cmd({"do": "select", "id": tab}); sv.cmd({"do": "wait", "id": tab, "seconds": 5})
 
     def reads(label):
