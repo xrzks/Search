@@ -240,66 +240,61 @@ appearance changes. `Theme.swift` (new), `Design.swift`, `Prefs.swift`,
 `Bench.swift` (`colours` in `ui` and `probe`),
 `Tests/SearchTests/FollowFileTests.swift`
 
-**Fixes from the review** (2026-11-17). What the privacy review found.
+**Disabled extensions left out of update checks** (2026-11-17). Every 20
+hours Google was sent the id and version of every Web Store extension,
+disabled ones included. `checkForUpdates` now skips the disabled ones; an
+enabled one keeps updating on its own, and one turned back on is checked at the
+next round. `Extensions.swift`
 
-- _Disabled extensions left out of update checks._ Every 20 hours Google was
-  sent the id and version of every Web Store extension, disabled ones included.
-  `checkForUpdates` now skips the disabled ones; an enabled one keeps updating
-  on its own, and one turned back on is checked at the next round.
-  `Extensions.swift`
-- _No updater._ Upstream's feed at `officecommun.com` was read at launch and
-  every hour, with no off switch, and a fork build would have been offered
-  upstream's DMG in its place. The check, download and swap-in are gone, with
-  the Check for Updates… menu item, the Updates rows in Settings › About and the
-  bench's `update` command; the fork is updated by rebuilding. `Updater.swift`
-  keeps only the version and build other files read (the team and Developer ID
-  requirement it also kept went with the On this Mac AI). Upstream's `README.md`
-  and `SECURITY.md` still describe the updater, left as they are so merges stay
-  clean. `Updater.swift`, `App.swift`, `Browser.swift`, `Prefs.swift`,
-  `Settings.swift`, `SettingsIndex.swift`, `Bench.swift`, `Welcome.swift`,
-  `Links.swift`, `AIEngine.swift` (comments), `bench-mcp`,
-  `Tests/SearchTests/VaultAndUpdaterTests.swift`, `Tests/bench_mcp.py`,
-  `Tests/settings_layout.py`
-- _DuckDuckGo by default._ `Engine.standard` is DuckDuckGo, so it is both the
-  default and where an invalid custom template falls back to. `Engine.swift`,
-  `Settings.swift`
-- _Non-interactive sign-in flows only where the extension has access._
-  `identity.launchWebAuthFlow` run out of sight now needs the extension's host
-  permission for the URL (`ExtensionFetch.granted`) and passes
-  `Extensions.mayOpen`; otherwise it fails with "User interaction required.", as
-  Chrome's does, and the extension can retry interactively.
-  `ExtensionShims.swift`
-- _Credentialed fetch in Settings._ `extensions.credentialedFetch` is shown as
-  Settings › Extensions › Sign-ins, "Extensions send your sign-ins", still on by
-  default. `Prefs.swift`, `Settings.swift`, `SettingsIndex.swift`,
-  `ExtensionFetch.swift` (comment)
-- _Clear History clears more._ Also hidden elements (`hidden.json`), every
-  site's permission answers (`capture.*` and the floating-video exceptions, the
-  same set as Forget choices) and the host on each download's row; the downloads
-  stay listed. `Browser.swift`, `Curtain.swift`, `CaptureChoices.swift`,
-  `Loot.swift`
-- _A smaller icon index._ `icons/pages.json` is capped at `History.cap` (2,000
-  instead of 4,000), and a page History prunes leaves it, unless a tab, pin or
-  bookmark is on it, or it is the last page of such a site. `Icons.swift`,
-  `History.swift`, `Pins.swift`, `Tests/HistoryRegression/Stubs.swift`,
-  `Tests/SearchTests/FaviconMemoryTests.swift`
-- _Ephemeral session._ `ProxyNetwork.session` is built on
-  `URLSessionConfiguration.ephemeral`: the browser's own requests, the Web
-  Store's among them, keep no cookies or cache on disk. `Proxy.swift`
-- _Switches fail closed._ `SwitchMark.given` counts only a keychain mark as
-  consent, not `errSecMissingEntitlement`. A build without Search's provisioning
-  profile can't leave the mark, so the bench, and Let coding agents use Search,
-  are off at every launch outside test runs, which don't read it.
-  `PageHands.swift` (`SwitchMark`)
-- _Documentation._ The proxy's help text in Settings says macOS's own services
-  (translation model downloads, location, certificate checks, Safe Browsing's
-  fraud warnings) don't go through it; it already named WebRTC over UDP, and
-  localhost and `.local` names. Safe Browsing is WebKit's fraud warning
-  (`isFraudulentWebsiteWarningEnabled`, left on), but its work is done by
-  macOS's `com.apple.Safari.SafeBrowsing.Service`, shared with Safari, not by
-  the network process `proxyConfigurations` applies to: it keeps its lists up to
-  date on its own schedule and, on a match, asks for full hashes through Apple's
-  relay with a hash prefix, not the address. Turning it off while a proxy is set
-  would trade a real protection for that prefix, so it stays on and is named
-  instead. `Translate.swift`'s header no longer says it is off unless switched
-  on. `Proxy.swift`, `Translate.swift`
+**No updater** (2026-11-17). Upstream's feed at `officecommun.com` was read at
+launch and every hour, with no off switch, and a fork build would have been
+offered upstream's DMG in its place. The check, download and swap-in are gone,
+with the Check for Updates… menu item, the Updates rows in Settings › About and
+the bench's `update` command; the fork is updated by rebuilding.
+`Updater.swift` keeps only the version and build other files read (the team and
+Developer ID requirement it also kept went with the On this Mac AI). Upstream's
+`README.md` and `SECURITY.md` still describe the updater, left as they are so
+merges stay clean. `Updater.swift`, `App.swift`, `Browser.swift`, `Prefs.swift`,
+`Settings.swift`, `SettingsIndex.swift`, `Bench.swift`, `Welcome.swift`,
+`Links.swift`, `AIEngine.swift` (comments), `bench-mcp`,
+`Tests/SearchTests/VaultAndUpdaterTests.swift`, `Tests/bench_mcp.py`,
+`Tests/settings_layout.py`
+
+**DuckDuckGo by default** (2026-11-17). `Engine.standard` is DuckDuckGo, so it
+is both the default and where an invalid custom template falls back to.
+`Engine.swift`, `Settings.swift`
+
+**Non-interactive sign-in flows only where the extension has access**
+(2026-11-17). `identity.launchWebAuthFlow` run out of sight now needs the
+extension's host permission for the URL (`ExtensionFetch.granted`) and passes
+`Extensions.mayOpen`; otherwise it fails with "User interaction required.", as
+Chrome's does, and the extension can retry interactively.
+`ExtensionShims.swift`
+
+**Credentialed fetch in Settings** (2026-11-17). `extensions.credentialedFetch`
+is shown as Settings › Extensions › Sign-ins, "Extensions send your sign-ins",
+still on by default. `Prefs.swift`, `Settings.swift`, `SettingsIndex.swift`,
+`ExtensionFetch.swift` (comment)
+
+**Clear History clears more** (2026-11-17). Also hidden elements
+(`hidden.json`), every site's permission answers (`capture.*` and the
+floating-video exceptions, the same set as Forget choices) and the host on each
+download's row; the downloads stay listed. `Browser.swift`, `Curtain.swift`,
+`CaptureChoices.swift`, `Loot.swift`
+
+**A smaller icon index** (2026-11-17). `icons/pages.json` is capped at
+`History.cap` (2,000 instead of 4,000), and a page History prunes leaves it,
+unless a tab, pin or bookmark is on it, or it is the last page of such a site.
+`Icons.swift`, `History.swift`, `Pins.swift`,
+`Tests/HistoryRegression/Stubs.swift`,
+`Tests/SearchTests/FaviconMemoryTests.swift`
+
+**Ephemeral session** (2026-11-17). `ProxyNetwork.session` is built on
+`URLSessionConfiguration.ephemeral`: the browser's own requests, the Web
+Store's among them, keep no cookies or cache on disk. `Proxy.swift`
+
+**Switches fail closed** (2026-11-17). `SwitchMark.given` counts only a
+keychain mark as consent, not `errSecMissingEntitlement`. A build without
+Search's provisioning profile can't leave the mark, so the bench, and Let
+coding agents use Search, are off at every launch outside test runs, which
+don't read it. `PageHands.swift` (`SwitchMark`)
