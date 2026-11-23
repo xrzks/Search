@@ -167,6 +167,8 @@ final class Links: NSObject, NSApplicationDelegate {
             FullScreenReturn.start()
             // The Mac's screenshots in Downloads, once asked for (Screenshots.swift).
             if Shared.prefs.screenshotsInDownloads { Screenshots.shared.watch(true) }
+            // The sites you've left, forgotten while Search runs too (Forget.swift).
+            Forget.Running.shared.start()
         }
         let plain = notification.userInfo?[NSApplication.launchIsDefaultUserInfoKey] as? Bool ?? true
         guard !plain else { return }

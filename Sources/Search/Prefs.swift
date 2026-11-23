@@ -710,8 +710,9 @@ final class Preferences: ObservableObject {
     @Published var removesCampaignTags: Bool {
         didSet { store.set(removesCampaignTags, forKey: "privacy.campaignTags") }
     }
-    /// Forget sites between launches (see Forget.swift). On unless turned
-    /// off; in a test run, off unless turned on.
+    /// Forget sites you've left, at launch and while Search runs (see
+    /// Forget.swift). On unless turned off; in a test run, off unless
+    /// turned on.
     @Published var forgetsSites: Bool {
         didSet { store.set(forgetsSites, forKey: Forget.key) }
     }

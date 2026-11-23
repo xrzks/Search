@@ -543,7 +543,7 @@ struct SiteCard: View {
             .padding(.leading, MenuMetrics.text)
             .padding(.trailing, MenuMetrics.trailing)
             .frame(height: MenuMetrics.row)
-            .help("Its cookies and site data stay when Search opens, and when you clear cookies or the cache. Kept as \(site).")
+            .help("Its cookies and site data stay when Search forgets the sites you've left, and when you clear cookies or the cache. Kept as \(site).")
         }
     }
 

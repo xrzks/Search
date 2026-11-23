@@ -1,14 +1,20 @@
 import SwiftUI
 import WebKit
 
-// Forget sites between launches: when Search opens, before any window or
-// tab, everything WebKit keeps for a site — cookies, local storage,
-// IndexedDB, service workers, caches — goes, unless the site is on the list
-// of sites to keep (Settings › Privacy › Clear). Every profile's store and
-// every space's own, not only the ones a window is about to show. At launch
+// Forget sites you've left: when Search opens, before any window or tab,
+// everything WebKit keeps for a site — cookies, local storage, IndexedDB,
+// service workers, caches — goes, unless the site is on the list of sites
+// to keep (Settings › Privacy › Clear). Every profile's store and every
+// space's own, not only the ones a window is about to show. At launch
 // rather than at quit, so quitting stays instant and a crash or a force
 // quit forgets just the same; no site sees the data in between, since
 // Search isn't running. Private tabs keep nothing anyway.
+//
+// And again while Search runs, so one left open for weeks forgets too:
+// about once an hour, and when the Mac wakes, the same sweep, but for the
+// sites a tab is open on as well (see Running). Not when a site's last tab
+// closes: that is a sweep per tab closed, and a site opened again a moment
+// later would have lost its sign-in for nothing.
 //
 // An entry is typed as for Send links to a space: "notion.so",
 // "https://www.notion.so/x" or "*.notion.so" are all the site "notion.so"
@@ -65,16 +71,28 @@ enum Forget {
     // MARK: - forgetting
 
     /// What `types` holds in each store, gone, but for the sites the list
-    /// keeps. Answers with the sites kept, by name, that had anything.
-    @MainActor static func sweep(_ stores: [WKWebsiteDataStore], types: Set<String>, keeping kept: [String]) async -> Set<String> {
+    /// keeps and the sites `open` names, read as the list is. Answers with
+    /// the sites kept, by name, that had anything. `open` is asked again
+    /// for each store, once its records are in: a tab opened while the
+    /// sweep waited on WebKit is spared too.
+    @MainActor static func sweep(_ stores: [WKWebsiteDataStore], types: Set<String>, keeping kept: [String],
+                                 sparing open: () -> Set<String> = { [] }) async -> Set<String> {
         var held = Set<String>()
         for store in stores {
             let records = await store.dataRecords(ofTypes: types)
-            let going = records.filter { !keeps($0.displayName, in: kept) }
+            let spared = Array(open())
+            let going = records.filter { !keeps($0.displayName, in: kept) && !keeps($0.displayName, in: spared) }
             held.formUnion(records.filter { keeps($0.displayName, in: kept) }.map(\.displayName))
             if !going.isEmpty { await store.removeData(ofTypes: types, for: going) }
         }
         return held
+    }
+
+    /// Everything, from every store of every profile, but the sites kept
+    /// and the ones `open` names: the sweep at launch and the one while
+    /// Search runs.
+    @MainActor static func forget(keeping kept: [String], sparing open: () -> Set<String> = { [] }) async {
+        _ = await sweep(everyProfilesStores, types: WKWebsiteDataStore.allWebsiteDataTypes(), keeping: kept, sparing: open)
     }
 
     /// Every store of every profile: its own and its spaces' own.
@@ -98,9 +116,8 @@ enum Forget {
         let done = Flag()
         MainActor.assumeIsolated {
             let kept = (Store.settings.array(forKey: keptKey) as? [String]) ?? []
-            let stores = everyProfilesStores
             Task { @MainActor in
-                _ = await sweep(stores, types: WKWebsiteDataStore.allWebsiteDataTypes(), keeping: kept)
+                await forget(keeping: kept)
                 done.set = true
             }
         }
@@ -113,9 +130,83 @@ enum Forget {
     private final class Flag: @unchecked Sendable {
         var set = false
     }
+
+    // MARK: - while Search runs
+
+    /// The sites a tab is open on, as a card keeps them (`site(of:)`): where
+    /// its page is, where it is going, and a pin's own page, which ⌘W takes
+    /// it back to. A tab asleep has its address all the same. Not a private
+    /// tab's: its store is one of its own, which keeps nothing.
+    @MainActor static func openSites(_ tabs: [Tab]) -> Set<String> {
+        var sites = Set<String>()
+        for tab in tabs where !tab.shy && tab.store.isPersistent {
+            for url in [tab.address, tab.committed, tab.pin == nil ? nil : tab.home] {
+                if let url, let site = site(of: url) { sites.insert(site) }
+            }
+        }
+        return sites
+    }
+
+    /// Every tab there is: every window's, of every profile — a tucked one
+    /// of a merged window, a popup's, and the last one closed, kept with its
+    /// tabs asleep — each space's row, its pins, a split's two sides and a
+    /// float's tab among them; the peek over a page; and the small windows.
+    @MainActor static var everyTab: [Tab] {
+        Browsers.all.flatMap { $0.tabs + $0.parkedTabs + [$0.peekTab].compactMap { $0 } }
+            + LittleWindow.all.map(\.tab)
+    }
+
+    /// The sweep while Search runs: started once, at launch (see
+    /// Links.applicationDidFinishLaunching), it runs about once an
+    /// hour and when the Mac wakes, with the switch on. Never two at once.
+    /// The tabs open are read as it goes, not before, and the list of sites
+    /// kept as it starts.
+    @MainActor final class Running {
+        static let shared = Running()
+
+        /// How often, and how soon after the last sweep one is worth
+        /// another: the timer late out of a sleep and the wake come together.
+        static let every: TimeInterval = 60 * 60
+        static let spacing: TimeInterval = 5 * 60
+
+        private(set) var sweeping = false
+        /// When the last one finished, the launch's counted as one.
+        private(set) var last = Date()
+        private var timer: Timer?
+        private var waking: NSObjectProtocol?
+
+        func start() {
+            guard timer == nil else { return }
+            let timer = Timer(timeInterval: Self.every, repeats: true) { _ in
+                MainActor.assumeIsolated { Running.shared.due() }
+            }
+            timer.tolerance = Self.spacing
+            RunLoop.main.add(timer, forMode: .common)
+            self.timer = timer
+            waking = NSWorkspace.shared.notificationCenter.addObserver(
+                forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
+            ) { _ in MainActor.assumeIsolated { Running.shared.due() } }
+        }
+
+        /// The timer or a wake: a sweep, unless one ran a moment ago.
+        private func due() {
+            guard Date().timeIntervalSince(last) >= Self.spacing else { return }
+            Task { await now() }
+        }
+
+        /// A sweep now: answers false, sweeping nothing, with the switch off
+        /// or another sweep under way.
+        @discardableResult func now() async -> Bool {
+            guard Shared.prefs.forgetsSites, !sweeping else { return false }
+            sweeping = true
+            defer { sweeping = false; last = Date() }
+            await Forget.forget(keeping: Shared.prefs.keptSites, sparing: { openSites(everyTab) })
+            return true
+        }
+    }
 }
 
-/// Settings › Privacy › Clear, under Forget sites when Search opens: each
+/// Settings › Privacy › Clear, under Forget sites you've left: each
 /// site kept, and a line to add one.
 struct KeptSiteList: View {
     @ObservedObject var prefs: Preferences

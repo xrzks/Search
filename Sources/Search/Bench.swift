@@ -5855,6 +5855,18 @@ final class Bench {
             default: answer(["error": "clear needs what: sites or cache"])
             }
 
+        case "forget":
+            // The sweep Search runs about once an hour and when the Mac
+            // wakes (Forget.Running), now, answered once done: "swept"
+            // false with the switch off or a sweep already under way, and
+            // the sites spared for a tab open on them. Test runs only: it
+            // signs you out of the sites you've left.
+            guard Store.testing else { answer(["error": "forget only works on a --test run — it would sign you out"]); return }
+            Task { @MainActor in
+                let swept = await Forget.Running.shared.now()
+                answer(["swept": swept, "open": Forget.openSites(Forget.everyTab).sorted()])
+            }
+
         case "pinfolder":
             // Folders in pinned rows (PinFolders.swift), as the setting,
             // the menus and a drag make and change them, and the rows read

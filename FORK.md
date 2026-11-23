@@ -16,17 +16,41 @@ clean.
 
 ## Roadmap
 
-What the fork plans to build, roughly in order. When something lands, its entry
-moves to [Changes](#changes-from-upstream) with the files it touches.
-
-**Forget a site when its last tab closes.** Sites are forgotten only when
-Search opens (see [Forget sites between launches](#changes-from-upstream)),
-so a Search left running for weeks keeps every site passed through for as
-long as it runs. Maybe, later: forget a site when its last tab closes as well.
+Nothing is planned right now; when something is, it is listed here, and moves
+to [Changes](#changes-from-upstream) with the files it touches once it lands.
 
 ## Changes from upstream
 
 Newest first. Each entry: what changed, why, and the files it touches.
+
+**Forget sites while Search runs** (2026-11-23). Sites were forgotten only
+when Search opened, so a Search left open for weeks kept every site passed
+through for weeks. Now the same sweep runs while Search is open as well:
+about once an hour, and when the Mac wakes from sleep, every profile's store
+and every space's own, as at launch, but for the sites you keep and the
+sites a tab is open on. A tab is any window's, of any profile — a tucked one
+of a merged window and the last window closed, kept with its tabs, among
+them — in any space, asleep or not, pinned (its pinned page counts too),
+either side of a split, the floating one, the peek and a small window's; not
+a private tab's, whose store keeps nothing. A tab's site is its registrable
+domain, matched to WebKit's records as an entry of the list is
+(`SpaceRoutes.same`, an IP address only as it is); a site in a frame of an
+open page is not spared for it. The tabs are read as each store's records
+come in, not before, so one opened while the sweep waits on WebKit is spared
+too. Unlike the launch's, it doesn't hold the main run loop: WebKit answers
+while Search goes on. Never two at once, nor one within five minutes of the
+last, as the timer late out of a sleep and the wake come together. Not when
+a site's last tab closes, as the roadmap had it: that is a sweep for every
+tab closed, and a site opened again a moment later would have lost its
+sign-in for nothing; an hour's wait is the cost. The same switch, renamed
+Forget sites you've left, under the same key (`forget.sites`), so the
+setting and its sync carry over; off in a test run unless turned on. The
+launch's sweep and this one share `Forget.forget`. The bench's `forget` verb
+(test runs only) runs the sweep now and answers with the sites spared.
+`Forget.swift` (`sweep`, `forget`, `openSites`, `everyTab`, `Running`),
+`Links.swift` (`applicationDidFinishLaunching`), `Prefs.swift`,
+`SettingsIndex.swift`, `SiteCard.swift` (`kept`), `Bench.swift`,
+`Tests/SearchTests/ForgetTests.swift`, `Tests/forget_sites.py`
 
 **Extension pages with customized built-ins** (2026-11-18). An extension
 page may make a `<button>` or an `<input>` one of its own elements, written
@@ -80,10 +104,10 @@ list of sites to keep: every profile's store and every space's own, not only
 the ones with a window open. The main run loop is run until WebKit answers, at
 most ten seconds. At launch rather than at quit, so quitting stays instant and
 a crash or a force quit forgets just the same. Settings › Privacy › Clear ›
-Forget sites when Search opens, on by default (off in a test run unless
-turned on), and the list under it, typed as for Send links to a space:
-"notion.so", "https://www.notion.so/x" or "*.notion.so" are kept as
-"notion.so". A record, which WebKit names by registrable domain, is kept when
+Forget sites you've left (then Forget sites when Search opens), on by
+default (off in a test run unless turned on), and the list under it, typed
+as for Send links to a space: "notion.so", "https://www.notion.so/x" or
+"*.notion.so" are kept as "notion.so". A record, which WebKit names by registrable domain, is kept when
 an entry and it are one site or one is a subdomain of the other
 (`SpaceRoutes.same`); an IP address only as it is, since `same` alone took
 10.0.0.1 for a subdomain of 0.0.1. A line under the list says that a site you
