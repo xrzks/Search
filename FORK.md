@@ -261,9 +261,9 @@ appearance changes. `Theme.swift` (new), `Design.swift`, `Prefs.swift`,
 `Bench.swift` (`colours` in `ui` and `probe`),
 `Tests/SearchTests/FollowFileTests.swift`
 
-**Disabled extensions left out of update checks** (2026-11-17). Every 20
-hours Google was sent the id and version of every Web Store extension,
-disabled ones included. `checkForUpdates` now skips the disabled ones; an
+**Disabled extensions left out of update checks** (2026-11-17). At each
+store check, once a day (sooner after one that failed), Google was sent the id
+and version of every Web Store extension, disabled ones included. `checkForUpdates` now skips the disabled ones; an
 enabled one keeps updating on its own, and one turned back on is checked at the
 next round. `Extensions.swift`
 
