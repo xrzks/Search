@@ -75,10 +75,8 @@ final class Favicons {
     /// for an address's icon row by row (see `extensionIcon`).
     private var extensionIcons: [String: NSImage] = [:]
 
-    /// As many pages as History keeps places; past that, the ones seen
-    /// longest ago are forgotten. An index of every page you have been to
-    /// is a history of its own.
-    private static let most = History.cap
+    /// More pages than this and the ones seen longest ago are forgotten.
+    private static let most = 4000
     /// Declared icons tried for one page, best first; favicon.ico makes six.
     private static let tried = 5
 
@@ -116,42 +114,6 @@ final class Favicons {
         if pages[site]?.isEmpty == true { pages[site] = nil }
         dropped.formUnion([gone.light, gone.dark].compactMap { $0 })
         save()
-    }
-
-    /// Pages History let go of, cut back to its cap: each goes as
-    /// `forget` has it go. Not one History still keeps (`kept`: a page is
-    /// its path, and two addresses can be one page), nor one a tab, a pin
-    /// or a bookmark is at, nor the last page of a site one of those is on,
-    /// which would be left wearing a letter.
-    func left(_ gone: [URL], kept: [URL]) {
-        load()
-        func spot(_ url: URL) -> String? { Favicons.site(url).map { "\($0) \(Favicons.page(url))" } }
-        let held = Favicons.held()
-        let stays = Set((kept + held).compactMap(spot))
-        let sites = Set(held.compactMap(Favicons.site).flatMap { [$0, $0.hasPrefix("www.") ? String($0.dropFirst(4)) : "www." + $0] })
-        var changed = false
-        for url in gone {
-            guard let site = Favicons.site(url) else { continue }
-            let path = Favicons.page(url)
-            guard !stays.contains("\(site) \(path)"), let page = pages[site]?[path],
-                  !(sites.contains(site) && pages[site]?.count == 1)
-            else { continue }
-            pages[site]?[path] = nil
-            if pages[site]?.isEmpty == true { pages[site] = nil }
-            dropped.formUnion([page.light, page.dark].compactMap { $0 })
-            changed = true
-        }
-        if changed { save() }
-    }
-
-    /// Where every window's tabs are, every space's, the pins' own pages and
-    /// every profile's bookmarks: their icons are wanted whether History
-    /// still has the page or not.
-    private static func held() -> [URL] {
-        let tabs = Browsers.all.flatMap { $0.tabs + $0.parkedTabs }.compactMap(\.address)
-        let pins = Pins.homes.compactMap(URL.init(string:))
-        let marks = Profiles.shared.list.flatMap { Bookmarks.urls(Profiles.bookmarks($0.id).roots) }
-        return tabs + pins + marks
     }
 
     /// The last private tab closed: what its pages wore goes with it, and

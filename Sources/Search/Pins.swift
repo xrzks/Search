@@ -68,13 +68,6 @@ enum Pins {
         return sharedBy[profile] ?? []
     }
 
-    /// Every pin's page, every space's and every profile's: their icons
-    /// stay when History lets the page go (Favicons.left).
-    static var homes: [String] {
-        load()
-        return (bySpace.values.flatMap { $0 } + sharedBy.values.flatMap { $0 }).map(\.home)
-    }
-
     /// Read once. Before there is a pins.json, the pins are the oldest
     /// window's, from its session files — every space's.
     static func load() {

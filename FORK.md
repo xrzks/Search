@@ -141,7 +141,7 @@ opened beside it and left it standing. Now the page takes its place: from a
 link, a page, Send links to a space or anything else that opens a tab, in the
 row on screen or in a space's row out of sight. It stays while something is
 typed in it, or while it is private, half of a pair or in the float.
-`Browser.swift` (`loneBlanks`, `open`), `SpaceRoutes.swift` (`send`),
+`Browser.swift` (`loneBlanks`, `open`), `SpaceRoutes.swift` (`openTyped`),
 `Tests/space_links.py`
 
 **No new tab row in the sidebar** (2026-11-18). The "New tab" row under the
@@ -313,13 +313,6 @@ still on by default. `Prefs.swift`, `Settings.swift`, `SettingsIndex.swift`,
 floating-video exceptions, the same set as Forget choices) and the host on each
 download's row; the downloads stay listed. `Browser.swift`, `Curtain.swift`,
 `CaptureChoices.swift`, `Loot.swift`
-
-**A smaller icon index** (2026-11-17). `icons/pages.json` is capped at
-`History.cap` (2,000 instead of 4,000), and a page History prunes leaves it,
-unless a tab, pin or bookmark is on it, or it is the last page of such a site.
-`Icons.swift`, `History.swift`, `Pins.swift`,
-`Tests/HistoryRegression/Stubs.swift`,
-`Tests/SearchTests/FaviconMemoryTests.swift`
 
 **Ephemeral session** (2026-11-17). `ProxyNetwork.session` is built on
 `URLSessionConfiguration.ephemeral`: the browser's own requests, the Web
