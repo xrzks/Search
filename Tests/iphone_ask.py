@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Search › What's New… (idea 968) and the iPhone beta's quieter places
-(IPhoneAsk.swift), in a hidden probe.
+"""Search › What's New… (idea 968), and the iPhone beta's quieter places
+(IPhoneAsk.swift) switched off in the fork, in a hidden probe.
 
 Build first (`./build.sh`), then `python3 Tests/iphone_ask.py`. The app is
 started hidden in a world of its own, with SEARCH_OPTIN_URL pointing at a
@@ -68,57 +68,24 @@ launch()
 try:
     # 968: Search › What's New… brings the card back, as after an update.
     again = sv.cmd({"do": "news", "again": True})
-    t.ok("Search menu: About, Check for Updates…, What's New… in that order",
-         again["menu"][0] == "About Search" and again["menu"][1].startswith("Check") and again["menu"][2] == "What's New…", again["menu"])
+    t.ok("Search menu: About, What's New… in that order, no Check for Updates…",
+         again["menu"][0] == "About Search" and again["menu"][1] == "What's New…"
+         and not any(m.startswith("Check") for m in again["menu"]), again["menu"])
     t.ok("What's New… is enabled and shows the card", again["enabled"] and again["showing"], again)
     sv.cmd({"do": "news", "on": False})
     about = f"{SHOTS or sv.SUPPORT}/about.png"
-    t.ok("About window draws (What's New button + iPhone line)", "saved" in sv.cmd({"do": "news", "about": True, "path": about}))
+    t.ok("About window draws (What's New button, no iPhone line)", "saved" in sv.cmd({"do": "news", "about": True, "path": about}))
 
-    # The iPhone beta: open on a fresh install, in every place.
+    # The iPhone beta: switched off in the fork, so offered nowhere, even
+    # on a fresh install, and nothing is sent.
+    POSTS.clear()
     s = ask("reset")
     blank_tab()
     s = ask()
-    t.ok("fresh: offered", s["open"], s)
-    t.ok("fresh: Help has Search for iPhone…", "Search for iPhone…" in s["helpMenu"], s["helpMenu"])
-    t.ok("fresh: a blank tab shows the line", s["newTab"], s)
-    for spot in ["about", "help", "newTab"]:
-        ask("picture", spot=spot, path=f"{SHOTS or sv.SUPPORT}/ask-{spot}.png")
-    ask("picture", spot="newTab", opened=True, path=f"{SHOTS or sv.SUPPORT}/ask-newTab-open.png")
-
-    s = ask("age", days=3.2)
-    t.ok("after three days the blank tab's line is gone", not s["newTab"] and s["open"], s)
-    s = ask("age", days=1)
-    t.ok("within three days it is back", s["newTab"], s)
-
-    s = ask("help")
-    t.ok("Help › Search for iPhone… opens the card", s["card"], s)
-
-    # Each place's press: the right endpoint, the right source, nothing else.
-    for spot, source in [("about", "app-about"), ("help", "app-help"), ("newTab", "app-newtab")]:
-        ask("reset")
-        POSTS.clear()
-        s = ask("join", email="probe@example.com", spot=spot)
-        body = POSTS[-1]["body"] if POSTS else {}
-        t.ok(f"{spot}: one POST to /api/ios-beta with source {source}",
-             len(POSTS) == 1 and POSTS[0]["path"] == "/api/ios-beta" and body == {"email": "probe@example.com", "source": source}, POSTS)
-        t.ok(f"{spot}: after joining, gone everywhere",
-             not s["open"] and not s["newTab"] and "Search for iPhone…" not in s["helpMenu"], s)
-
-    # The Mac news list alone (the card, box unticked): still offered.
-    ask("reset")
-    s = ask("join", email="probe@example.com", spot="about", news=True, ticked=False)
-    t.ok("news list alone: still offered everywhere",
-         s["joined"] and s["open"] and s["newTab"] and "Search for iPhone…" in s["helpMenu"], s)
-    s = ask("join", email="probe@example.com", spot="about", news=True, ticked=True)
-    t.ok("the card with the iPhone box ticked: gone everywhere",
-         not s["open"] and not s["newTab"] and "Search for iPhone…" not in s["helpMenu"], s)
-
-    ask("reset")
-    POSTS.clear()
-    s = ask("dismiss")
-    t.ok("Not now: gone everywhere", not s["open"] and not s["newTab"] and "Search for iPhone…" not in s["helpMenu"], s)
-    t.ok("Not now sends nothing", POSTS == [], POSTS)
+    t.ok("fresh: not offered", not s["open"], s)
+    t.ok("fresh: Help has no Search for iPhone…", "Search for iPhone…" not in s["helpMenu"], s["helpMenu"])
+    t.ok("fresh: a blank tab shows no line", not s["newTab"], s)
+    t.ok("nothing sent", POSTS == [], POSTS)
 finally:
     sv.finish()
 t.done()

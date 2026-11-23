@@ -23,6 +23,17 @@ to [Changes](#changes-from-upstream) with the files it touches once it lands.
 
 Newest first. Each entry: what changed, why, and the files it touches.
 
+**No iPhone beta prompts** (2026-11-23). Upstream 1.0.19 asks for an email for
+its iPhone beta in Help › Search for iPhone…, under the About window's version,
+and on a blank tab for three days; one press sends the address to upstream's
+site, `searchbrowser.app`, from a build they didn't make. Switched
+off with upstream's own switch (`IPhoneAsk.on`) rather than removed, so merges
+stay simple; the Help menu is empty again. Settings › About's news and beta
+field, which upstream had before, is left as it is. The unit tests skip while it
+is off; `iphone_ask.py` checks it is offered nowhere and that the Search menu has
+no Check for Updates…. `IPhoneAsk.swift` (`on`),
+`Tests/SearchTests/IPhoneAskTests.swift`, `Tests/iphone_ask.py`
+
 **Forget sites while Search runs** (2026-11-23). Sites were forgotten only
 when Search opened, so a Search left open for weeks kept every site passed
 through for weeks. Now the same sweep runs while Search is open as well:

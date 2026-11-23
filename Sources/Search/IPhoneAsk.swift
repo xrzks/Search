@@ -24,8 +24,10 @@ import SwiftUI
 // Fold.swift, Bench.swift) and the three sources in OptIn.Source.
 
 enum IPhoneAsk {
-    /// The one switch for every place.
-    static let on = true
+    /// The one switch for every place. Off in the fork: an address typed
+    /// here would go to upstream's list from a build they didn't make.
+    /// Settings › About's own field (OptIn.swift) is left as upstream has it.
+    static let on = false
 
     /// "Not now", pressed in any place: never offered again anywhere.
     nonisolated static let dismissedKey = "iphoneask.dismissed"

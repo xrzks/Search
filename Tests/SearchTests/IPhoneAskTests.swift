@@ -9,6 +9,10 @@ final class IPhoneAskTests: XCTestCase {
     private var store: UserDefaults!
     private let suite = "com.officecommun.search.iphoneask-tests-\(getpid())"
 
+    override func setUpWithError() throws {
+        try XCTSkipUnless(IPhoneAsk.on, "the fork switches the iPhone beta's places off")
+    }
+
     override func setUp() {
         super.setUp()
         store = UserDefaults(suiteName: suite)
