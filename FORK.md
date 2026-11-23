@@ -24,9 +24,6 @@ Search opens (see [Forget sites between launches](#changes-from-upstream)),
 so a Search left running for weeks keeps every site passed through for as
 long as it runs. Maybe, later: forget a site when its last tab closes as well.
 
-**A shorter Referer.** A request to another site carries only the origin it
-came from, or nothing, not the whole address of the page.
-
 ## Changes from upstream
 
 Newest first. Each entry: what changed, why, and the files it touches.
