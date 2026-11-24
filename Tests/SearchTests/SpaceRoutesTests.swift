@@ -81,6 +81,15 @@ final class SpaceRoutesTests: XCTestCase {
                      "a page's new-tab links with no rule stay in its space")
     }
 
+    func testOneSiteWithItsSubdomains() {
+        XCTAssertTrue(SpaceRoutes.same("github.com", "github.com"))
+        XCTAssertTrue(SpaceRoutes.same("github.com", "gist.github.com"))
+        XCTAssertTrue(SpaceRoutes.same("gist.github.com", "github.com"))
+        XCTAssertFalse(SpaceRoutes.same("gist.github.com", "docs.github.com"), "siblings are two sites")
+        XCTAssertFalse(SpaceRoutes.same("github.com", "notgithub.com"), "a suffix is not a subdomain")
+        XCTAssertFalse(SpaceRoutes.same("::1", "1"))
+    }
+
     func testKeptAsPlainSettings() {
         let route = SpaceRoute(site: "figma.com", space: work.id)
         XCTAssertEqual(SpaceRoute(plist: route.plist), route)

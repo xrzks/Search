@@ -104,6 +104,12 @@ enum SpaceRoutes {
             .max { $0.site.count < $1.site.count }
     }
 
+    /// Whether two sites are one: the same, or one a subdomain of the other.
+    static func same(_ one: String, _ other: String) -> Bool {
+        one == other || (!one.contains(":") && !other.contains(":")
+            && (one.hasSuffix("." + other) || other.hasSuffix("." + one)))
+    }
+
     /// The space a rule sends an address to: only while the setting and
     /// spaces are both on, and only a space that is still there.
     static func space(for url: URL, routes: [SpaceRoute], on: Bool, spaces: [UUID: Space]) -> Space? {
