@@ -139,4 +139,39 @@ final class LauncherTests: XCTestCase {
         launcher.submit()
         XCTAssertEqual(browser.active?.address, page)
     }
+
+    /// The launcher's list is the window's (Browser.siteNamed), so "@yt" is
+    /// offered there too, and Tab puts it in the field as ⌘L's Tab does.
+    func testTheSiteAnAtNamesIsTheWindowsOwnAnswer() throws {
+        let browser = Browser(record: WindowRecord())
+        XCTAssertEqual(browser.siteNamed(by: "@yt")?.name, "YouTube")
+        XCTAssertEqual(browser.siteNamed(by: "@red")?.name, "Reddit")
+        XCTAssertNil(browser.siteNamed(by: "yt"), "without the @ a word is a search")
+    }
+
+    /// Tab's site in the field: what is typed goes to that site, never to the
+    /// engine, and ⌫ or Escape takes the site out and leaves the words.
+    func testASitePutInTheFieldIsSearchedFromThere() throws {
+        let launcher = Launcher.shared
+        let youtube = try XCTUnwrap(SiteSearch.match("@yt", learnedToo: false))
+        defer { launcher.dropSiteChip(); launcher.type("") }
+
+        launcher.siteChip = youtube
+        launcher.type("cats")
+        let only = try XCTUnwrap(launcher.offers.first)
+        XCTAssertEqual(only.url.absoluteString, "https://www.youtube.com/results?search_query=cats")
+        XCTAssertEqual(only.title, "YouTube")
+        XCTAssertEqual(launcher.offers.count, 1, "a site in the field offers its search, not the engine's")
+        XCTAssertNil(launcher.ending)
+
+        // Nothing typed after it: no row, and nothing for Return either.
+        launcher.type("")
+        XCTAssertTrue(launcher.offers.isEmpty)
+
+        launcher.type("cats")
+        launcher.dropSiteChip()
+        XCTAssertNil(launcher.siteChip)
+        XCTAssertTrue(launcher.offers.isEmpty, "the site gone, the words have no search of its own")
+        XCTAssertEqual(launcher.typed, "cats")
+    }
 }

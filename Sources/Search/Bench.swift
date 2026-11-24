@@ -5668,11 +5668,13 @@ final class Bench {
             case "little": prefs.launcherLittle = request["on"] as? Bool ?? true
             case "type": launcher.type(request["text"] as? String ?? "")
             case "pick": launcher.picked = request["index"] as? Int
+            // Tab with a site offered ("@yt"): the site in the field.
+            case "tab": _ = launcher.lockSiteOffer()
             case "submit": launcher.submit()
-            case "escape": launcher.dismiss()
+            case "escape": launcher.escape()
             case "state": break
             default:
-                answer(["error": "launcher takes on, key, little, fire, type, pick, submit, escape or state"])
+                answer(["error": "launcher takes on, key, little, fire, type, pick, tab, submit, escape or state"])
                 return
             }
             // A turn later, once the switch's and the key's sinks have run.
@@ -5687,6 +5689,10 @@ final class Bench {
                     "registered": HotKey.isSet,
                     "up": launcher.up,
                     "typed": launcher.typed,
+                    // The site "@yt" offers and the one Tab put in the field
+                    // (SiteSearch.swift), as the window's field reports them.
+                    "siteOffer": launcher.siteOffer?.name ?? "",
+                    "chip": launcher.siteChip?.name ?? "",
                     "offers": launcher.offers.map { ["url": $0.url.absoluteString, "open": $0.tab != nil, "kind": "\($0.kind)"] },
                     // The window's own field, which the launcher's never shows in.
                     "editing": front.editing,

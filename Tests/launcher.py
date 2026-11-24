@@ -96,6 +96,35 @@ try:
     t.ok("…and the words come back with it next time", s["typed"] == "kept words", s)
     t.ok("the key again puts it away", la("fire")["up"] is False)
 
+    # A site after an @, as ⌘L's field has it: "@yt" offers YouTube, Tab puts
+    # it in the field, and the words after it go to YouTube's search.
+    la("fire")
+    s = la("type", text="@yt")
+    t.ok("@yt offers YouTube", s["siteOffer"] == "YouTube", s)
+    s = la("tab")
+    t.ok("Tab: YouTube in the field, the word let go", s["chip"] == "YouTube" and s["typed"] == "", s)
+    s = la("type", text="cats")
+    t.ok("…and what is typed after it is YouTube's search",
+         len(s["offers"]) == 1 and s["offers"][0]["url"].endswith("/results?search_query=cats"), s["offers"])
+    s = la("submit")
+    went = [x["address"] for x in s["tabs"] if "youtube.com/results?search_query=cats" in x["address"]]
+    t.ok("Return on it searches YouTube, not the engine", s["up"] is False and bool(went), s["tabs"])
+
+    # Escape takes the site out first, as ⌘L's field does; the next Escape
+    # puts the field away.
+    la("fire")
+    la("type", text="@yt")
+    la("tab")
+    s = la("escape")
+    t.ok("Escape takes the site out and the field stays", s["up"] is True and s["chip"] == "", s)
+    s = la("escape")
+    t.ok("…and with the site gone, the next Escape puts the field away", s["up"] is False, s)
+
+    la("fire")
+    s = la("type", text="red")
+    t.ok("without the @ a word offers no site", s["siteOffer"] == "", s)
+    la("escape")
+
     la("fire")
     s = la("on", on=False)
     t.ok("turned off while up, it goes and wants no key", s["up"] is False and s["wants"] is False, s)

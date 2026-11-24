@@ -5,7 +5,8 @@ import SwiftUI
 // The address field from any app (Settings › Keyboard & Mouse › From any app;
 // #783, idea 497). A key of your own raises it over whichever app is in
 // front, as Spotlight's does. What is typed there is answered as ⌘L answers
-// it — your bookmarks, where you have been, the pages already open — and
+// it — your bookmarks, where you have been, the pages already open, and a
+// site after an @ ("@yt cats", Tab to put YouTube in the field) — and
 // Return opens it in Search's window in front, or goes to the tab that has
 // it, and brings Search forward. Escape, a click outside, ⌘W or the key
 // again puts it away and leaves you in the app you were in, which never
@@ -18,7 +19,8 @@ import SwiftUI
 // Its own field and list, not a window's. A window's field shows wherever
 // its browser says it is editing, and on every blank tab, so one shared with
 // it showed every key typed here in that window too. What answers what is
-// typed is the window's own: Browser.placeOffers, and ⌘K's open pages.
+// typed is the window's own: Browser.placeOffers, Browser.siteNamed and
+// ⌘K's open pages.
 //
 // Nothing is asked of a search engine while typing: words typed over another
 // app are not a page Search was asked to show.
@@ -54,6 +56,12 @@ final class Launcher: NSObject, ObservableObject, NSWindowDelegate {
     @Published private(set) var focusRequest = 0
     /// Why macOS wouldn't give Search the key chosen, for Settings to say.
     @Published private(set) var refusal: String?
+
+    /// The site an @ names ("@yt", "@red"), first in the list, with the key
+    /// that takes it: the same one ⌘L's field offers (Browser.siteNamed).
+    @Published private(set) var siteOffer: SearchSite?
+    /// The site Tab put in the field, before what is typed, as ⌘L's chip.
+    @Published var siteChip: SearchSite?
 
     /// What was typed when the field was put away without going anywhere,
     /// for the next time, as ⌘T keeps its words.
@@ -202,12 +210,41 @@ final class Launcher: NSObject, ObservableObject, NSWindowDelegate {
         offers = []
         ending = nil
         picked = nil
+        siteOffer = nil
+        siteChip = nil
         panel?.orderOut(nil)
         if let clicks { NSEvent.removeMonitor(clicks) }
         clicks = nil
         if let keys { NSEvent.removeMonitor(keys) }
         keys = nil
         DispatchQueue.main.async { [weak self] in self?.refresh() }
+    }
+
+    /// Escape: a site put in the field goes and the field stays, as ⌘L's
+    /// field does; with none, the field goes too.
+    func escape() {
+        if siteChip != nil { return dropSiteChip() }
+        dismiss()
+    }
+
+    /// The site taken out of the field, by Escape or ⌫ in an empty one: what
+    /// is typed stays.
+    func dropSiteChip() {
+        guard siteChip != nil else { return }
+        siteChip = nil
+        guess()
+    }
+
+    /// Tab with a site offered ("@yt", "@red"): the site goes into the field
+    /// as a chip, and what was typed to name it is let go. True when it did.
+    /// The same list and the same chip as ⌘L's field (SiteSearch.swift).
+    func lockSiteOffer() -> Bool {
+        guard Shared.prefs.searchesSites, siteChip == nil, let site = siteOffer else { return false }
+        siteOffer = nil
+        typed = ""
+        siteChip = site
+        guess()
+        return true
     }
 
     func windowDidResignKey(_ notification: Notification) {
@@ -247,7 +284,7 @@ final class Launcher: NSObject, ObservableObject, NSWindowDelegate {
 
     private func take(_ event: NSEvent) -> Bool {
         if event.keyCode == 53 {
-            dismiss()
+            escape()
             return true
         }
         let flags = event.modifierFlags.intersection([.command, .option, .control, .shift])
@@ -305,14 +342,28 @@ final class Launcher: NSObject, ObservableObject, NSWindowDelegate {
     }
 
     /// What ⌘L's field would offer for the same words, in the window the
-    /// key was pressed over, with the pages already open first.
+    /// key was pressed over, with the pages already open first — and the site
+    /// an @ names, offered over them with Tab, as there.
     private func guess() {
         picked = nil
-        guard let target, !typed.trimmingCharacters(in: .whitespaces).isEmpty else {
+        let words = typed.trimmingCharacters(in: .whitespaces)
+        // A site in the field: its search for the words after it, and nothing
+        // else — the words go to that site, not to the engine or the list.
+        if let site = siteChip {
+            siteOffer = nil
+            ending = nil
+            offers = words.isEmpty ? [] : site.url(for: words).map {
+                [Suggestion(key: words, title: site.name, url: $0, kind: .search)]
+            } ?? []
+            return
+        }
+        guard let target, !words.isEmpty else {
+            siteOffer = nil
             offers = []
             ending = nil
             return
         }
+        siteOffer = target.siteNamed(by: typed)
         let places = target.placeOffers(for: typed)
         let open = openTabs(matching: typed, for: target)
         // A page offered as open isn't offered again as a place to load.
@@ -405,6 +456,10 @@ final class Launcher: NSObject, ObservableObject, NSWindowDelegate {
             url = address
         } else if let chosen {
             url = chosen.url
+        } else if let site = siteChip {
+            // A site in the field: what was typed goes to its search, as
+            // ⌘L's field sends it (Browser.destination).
+            url = site.url(for: typed.trimmingCharacters(in: .whitespaces))
         } else if let ending {
             url = Address.url(from: typed + ending)
         } else {
@@ -520,7 +575,7 @@ private struct LauncherView: View {
     var body: some View {
         VStack(spacing: 8) {
             field
-            if !launcher.offers.isEmpty { list }
+            if !launcher.offers.isEmpty || launcher.siteOffer != nil { list }
         }
         .frame(width: Metrics.fieldWidth)
         .padding(LauncherPanel.margin)
@@ -528,11 +583,19 @@ private struct LauncherView: View {
         // A click beside the field, in the panel, puts it away as a click
         // anywhere else does.
         .background(Color.clear.contentShape(Rectangle()).onTapGesture { launcher.dismiss() })
-        .animation(Motion.quick, value: launcher.offers.isEmpty)
+        .animation(Motion.quick, value: launcher.offers.isEmpty && launcher.siteOffer == nil)
     }
 
     private var field: some View {
-        LauncherField(launcher: launcher)
+        HStack(spacing: 8) {
+            // The site Tab put here, before what is typed, as ⌘L's chip.
+            if let site = launcher.siteChip {
+                SiteChip(site: site)
+                    .transition(.scale(scale: 0.9, anchor: .leading).combined(with: .opacity))
+            }
+            LauncherField(launcher: launcher)
+        }
+            .animation(Motion.quick, value: launcher.siteChip)
             .frame(height: 22)
             .padding(.horizontal, 22)
             .padding(.vertical, 14)
@@ -557,6 +620,12 @@ private struct LauncherView: View {
 
     private var list: some View {
         VStack(spacing: 0) {
+            // "@yt" then Tab: YouTube's search, as over a page.
+            if let site = launcher.siteOffer {
+                SiteOfferRow(site: site)
+                    .contentShape(Rectangle())
+                    .onTapGesture { _ = launcher.lockSiteOffer() }
+            }
             ForEach(Array(launcher.offers.enumerated()), id: \.element.id) { index, offer in
                 Omnibox.Row(offer: offer, picked: launcher.picked == index)
                     .contentShape(Rectangle())
@@ -686,14 +755,19 @@ private struct LauncherField: NSViewRepresentable {
             case #selector(NSResponder.insertNewline(_:)):
                 launcher.submit()
                 return true
-            case #selector(NSResponder.moveDown(_:)), #selector(NSResponder.insertTab(_:)):
+            case #selector(NSResponder.moveDown(_:)):
+                launcher.walk(1)
+                return true
+            case #selector(NSResponder.insertTab(_:)):
+                // "@yt" then Tab: YouTube, in the field, as ⌘L's Tab does.
+                if launcher.lockSiteOffer() { return true }
                 launcher.walk(1)
                 return true
             case #selector(NSResponder.moveUp(_:)), #selector(NSResponder.insertBacktab(_:)):
                 launcher.walk(-1)
                 return true
             case #selector(NSResponder.cancelOperation(_:)):
-                launcher.dismiss()
+                launcher.escape()
                 return true
             case #selector(NSResponder.deleteWordBackward(_:)),
                  #selector(NSResponder.deleteToBeginningOfLine(_:)):
@@ -714,6 +788,10 @@ private struct LauncherField: NSViewRepresentable {
                 } else {
                     textView.deleteToBeginningOfLine(nil)
                 }
+                return true
+            case #selector(NSResponder.deleteBackward(_:)) where textView.string.isEmpty && launcher.siteChip != nil:
+                // ⌫ in an empty field takes the site out of it.
+                launcher.dropSiteChip()
                 return true
             case #selector(NSResponder.deleteBackward(_:)),
                  #selector(NSResponder.deleteForward(_:)),

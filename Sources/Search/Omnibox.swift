@@ -349,8 +349,9 @@ private struct SiteIcon: View {
 }
 
 /// The site Tab put in the field: its icon and name, in the field's grey,
-/// before what is typed.
-private struct SiteChip: View {
+/// before what is typed. Also the launcher's, raised over another app
+/// (Launcher.swift).
+struct SiteChip: View {
     let site: SearchSite
     var body: some View {
         HStack(spacing: 6) {
@@ -369,8 +370,9 @@ private struct SiteChip: View {
     }
 }
 
-/// "Search Reddit", first in the list, with the key that takes it.
-private struct SiteOfferRow: View {
+/// "Search Reddit", first in the list, with the key that takes it — the
+/// launcher's too (Launcher.swift).
+struct SiteOfferRow: View {
     let site: SearchSite
     @State private var hovering = false
     var body: some View {

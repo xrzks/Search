@@ -92,6 +92,22 @@ saved with it still works. `SiteSearch.swift` (`match`), `Keyword.swift`
 `Tests/SearchTests/SiteSearchTests.swift`, `Tests/SearchTests/EngineSuggestTests.swift`,
 `Tests/site_search.py`, `Tests/site_search_suggestions.py`
 
+**A site after an @ in the field from any app** (2026-11-24). "@red" then Tab
+searched Reddit in a window's field, but the address field raised over another
+app (Settings › From any app) offered no site and sent "@yt cats" to the
+default engine: the launcher has a field and a list of its own, and only asked
+the window for places and for Return, never for the site an @ names. It asks
+now (`Browser.siteNamed`, which the window's own field works the same list
+with): "@yt" puts "Search YouTube, Tab" first in the list, Tab puts YouTube in
+the field as the chip ⌘L's Tab does, and the words after it go to YouTube's
+search. ⌫ in the empty field takes the site out, Escape takes the site first
+and the field on the next press, and a site still in the field goes with the
+field when it is put away. `Launcher.swift` (`siteOffer`, `siteChip`,
+`lockSiteOffer`, `dropSiteChip`, `escape`, `guess`, `submit`),
+`Browser.swift` (`siteNamed`), `Omnibox.swift` (`SiteChip`, `SiteOfferRow`
+shared with the launcher), `Bench.swift` (`launcher` `tab`, `siteOffer`,
+`chip`), `Tests/SearchTests/LauncherTests.swift`, `Tests/launcher.py`
+
 **Less Office Commun** (2026-11-18). The fork keeps the name Search, but two
 things still pointed at Office Commun. The AI sign-in's callback, which Search
 takes before it loads, was on `officecommun.com`; it is now

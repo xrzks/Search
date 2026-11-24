@@ -8341,10 +8341,8 @@ final class Browser: NSObject, ObservableObject {
             siteOffer = nil
             return
         }
-        // "red": Reddit's search, a Tab away.
-        let site = prefs.searchesSites && !summoning
-            ? SiteSearch.match(typed, learnedToo: profileID == Profile.personalID, keywords: prefs.keywords) { [history] in history.visits(to: $0.map(\.host)) }
-            : nil
+        // "@red": Reddit's search, a Tab away.
+        let site = summoning ? nil : siteNamed(by: typed)
         if siteOffer != site { siteOffer = site }
 
         (offers, ending) = placeOffers(for: typed)
@@ -8753,6 +8751,17 @@ final class Browser: NSObject, ObservableObject {
     /// next keystroke is right; putting it back on this one is what makes a
     /// field impossible to shorten.
     func stopCompleting() { ending = nil }
+
+    /// The site an @ names ("@yt", "@red"), as the field offers it: the one
+    /// Tab puts in the field. Its own list, in the launcher (Launcher.swift),
+    /// asks the same question of the window it is raised for, so "@yt" is
+    /// offered the same there; `siteOffer` is the field's own, drawn under it.
+    func siteNamed(by typed: String) -> SearchSite? {
+        guard prefs.searchesSites else { return nil }
+        return SiteSearch.match(typed, learnedToo: profileID == Profile.personalID, keywords: prefs.keywords) { [history] in
+            history.visits(to: $0.map(\.host))
+        }
+    }
 
     /// Tab with a site offered: the site goes into the field as a chip, and
     /// what was typed to name it is let go. True when it did.
