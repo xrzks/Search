@@ -225,12 +225,13 @@ with the updater gone nothing offered it, and a fork build couldn't have passed
 the check. The provider, the engine and its build are taken out rather than left
 to vanish from Settings unexplained. The add-on itself is still held back in
 this build, as upstream has it (`AI.shipped`); when it comes back, Ollama and LM
-Studio still run a model on this Mac. `Updater` no longer carries the team or
-its Developer ID requirement, which only the engine read. Upstream's `README.md`
-and other documents may still mention `engine.sh`; they are left as upstream has
-them. `AIEngine.swift`, `engine.sh` and `Engine/` (removed), `AI.swift`,
-`AIAssist.swift`, `Updater.swift`, `Bench.swift` and `bench` (the `ai engine`
-verb), `build.sh` (the appcast's engine), `Proxy.swift` (comment)
+Studio still run a model on this Mac. `AIDownload.Failure`, which upstream's
+developer tools packages also use, moves to `DevToolsPackages.swift`. Upstream's
+`README.md` and other documents may still mention `engine.sh`; they are left as
+upstream has them. `AIEngine.swift`, `engine.sh` and `Engine/` (removed),
+`AI.swift`, `AIAssist.swift`, `Updater.swift`, `DevToolsPackages.swift`,
+`Bench.swift` and `bench` (the `ai engine` verb), `build.sh` (the appcast's
+engine), `Proxy.swift` (comment)
 
 **An install script** (2026-11-17, more on 2026-11-18). With the updater gone,
 `./install.sh` is how the fork is updated: it builds a release and puts it in
@@ -282,14 +283,23 @@ next round. `Extensions.swift`
 launch and every hour, with no off switch, and a fork build would have been
 offered upstream's DMG in its place. The check, download and swap-in are gone,
 with the Check for Updates… menu item, the Updates rows in Settings › About and
-the bench's `update` command; the fork is updated by rebuilding.
-`Updater.swift` keeps only the version and build other files read (the team and
-Developer ID requirement it also kept went with the On this Mac AI). Upstream's
-`README.md` and `SECURITY.md` still describe the updater, left as they are so
-merges stay clean. `Updater.swift`, `App.swift`, `Browser.swift`, `Prefs.swift`,
-`Settings.swift`, `SettingsIndex.swift`, `Bench.swift`, `Welcome.swift`,
-`Links.swift`, `AIEngine.swift` (comments), `bench-mcp`,
-`Tests/SearchTests/VaultAndUpdaterTests.swift`, `Tests/bench_mcp.py`,
+the bench's `update` command; the fork is updated by rebuilding. Upstream's
+"Update ready" (for 1.0.20, not yet released: a card at the column's foot, a
+pill by the tabs, and its two switches in Settings › About) is gone with it;
+only its button, `CardButton`, which the coding agent's card uses too, is left
+in `UpdateNotice.swift`. `Updater.swift` keeps only what other files read: the
+version and build, a relaunch (the developer tools packages' Restart), and the
+team and its Developer ID requirement (those packages' check). The packages'
+list comes only from the feed, so with no feed none is ever offered, and
+Settings › About › Developer says none is. Upstream's `README.md` and
+`SECURITY.md` still describe the updater, left as they are so merges stay clean.
+`Updater.swift`, `UpdateNotice.swift`, `Side.swift`, `TabBar.swift`,
+`DevToolsPackages.swift` (`Updater.relaunch`), `App.swift`, `Browser.swift`,
+`Prefs.swift`, `Settings.swift`, `SettingsIndex.swift`, `Bench.swift`,
+`Welcome.swift`, `Links.swift`, `AIEngine.swift` (comments), `bench-mcp`,
+`Tests/SearchTests/VaultAndUpdaterTests.swift`,
+`Tests/SearchTests/UpdateNoticeTests.swift` (removed),
+`Tests/SearchTests/AgentCardTests.swift`, `Tests/bench_mcp.py`,
 `Tests/settings_layout.py`
 
 **DuckDuckGo by default** (2026-11-17). `Engine.standard` is DuckDuckGo, so it
