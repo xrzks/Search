@@ -915,6 +915,10 @@ struct SettingsPanel: View {
         case "window.glass.style": Segmented(options: GlassStyle.allCases.map { ($0, $0.title) }, selection: $prefs.glassStyle)
         case "window.glass.clear": Slider(value: $prefs.glassClear, in: 0...1).controlSize(.small).frame(width: 160)
         case "window.glass.grain": Slider(value: $prefs.glassGrain, in: 0...1).controlSize(.small).frame(width: 160)
+        case "window.transparent": Switch(on: $prefs.transparent)
+        case "window.transparent.opacity":
+            Slider(value: $prefs.opacity, in: Transparency.leastOpacity...1).controlSize(.small).frame(width: 160)
+        case "window.transparent.blur": Switch(on: $prefs.blurs)
         case "toolbar.left": Switch(on: $prefs.navigationLeft)
         case "tabs.compact":
             Switch(on: Binding(
@@ -1257,6 +1261,11 @@ struct SettingsPanel: View {
         case "profiles":
             if !searched {
                 ProfileList(browser: browser)
+                    .under()
+            }
+        case "window.transparent":
+            if !searched, prefs.transparent {
+                OpaqueSiteList(prefs: prefs)
                     .under()
             }
         case "forget.sites":

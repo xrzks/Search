@@ -411,6 +411,7 @@ struct SiteCard: View {
             zoom
             blocker
             kept
+            seeThrough
             if let url = tab.pageAddress, ["http", "https"].contains(url.scheme?.lowercased() ?? "") {
                 Row("Site Permissions", submenu: true) { showingPermissions = true }
             }
@@ -544,6 +545,28 @@ struct SiteCard: View {
             .padding(.trailing, MenuMetrics.trailing)
             .frame(height: MenuMetrics.row)
             .help("Its cookies and site data stay when Search forgets the sites you've left, and when you clear cookies or the cache. Kept as \(site).")
+        }
+    }
+
+    /// Whether the site's pages are see-through (see Transparency.swift):
+    /// on unless the list of opaque sites has it. Only while the window is
+    /// see-through at all, and not in a private tab, where nothing is kept.
+    @ViewBuilder private var seeThrough: some View {
+        if !tab.shy, prefs.transparent, let url = tab.pageAddress, let site = Forget.site(of: url) {
+            let on = Binding(get: { !Forget.keeps(site, in: prefs.opaqueSites) },
+                             set: { $0 ? Transparency.letThrough(site) : Transparency.keepOpaque(site) })
+            HStack(spacing: 0) {
+                Text("See-Through Page").font(MenuMetrics.font)
+                Spacer(minLength: 24)
+                Switch(on: on)
+                    .accessibilityRepresentation { Toggle("See-Through Page", isOn: on) }
+                    .focusable()
+                    .onKeyPress(.space) { on.wrappedValue.toggle(); return .handled }
+            }
+            .padding(.leading, MenuMetrics.text)
+            .padding(.trailing, MenuMetrics.trailing)
+            .frame(height: MenuMetrics.row)
+            .help("Off, its pages keep their own background. Kept as \(site).")
         }
     }
 

@@ -239,6 +239,7 @@ final class PaneStage: NSView {
     /// Each divider, the one after page `index` at `index`.
     fileprivate var dividers: [PaneDivider] { [divider] + moreDividers }
     private var watching: [AnyCancellable] = []
+    private var followed: [AnyCancellable] = []
     private var watched: [ObjectIdentifier] = []
     private var queued = false
     private var monitor: Any?
@@ -271,6 +272,18 @@ final class PaneStage: NSView {
         wantsLayer = true
         divider.stage = self
         addSubview(divider)
+        // See-through on or off: the ground behind the pages with it.
+        Shared.prefs.$transparent.dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.needsDisplay = true; self?.paint() }
+            .store(in: &followed)
+    }
+
+    /// See-through (see Transparency.swift): no ground behind the pages,
+    /// nor a card's shadow cast through them. Not in full screen, as the
+    /// window isn't there.
+    private var seeThrough: Bool {
+        Shared.prefs.transparent && !(window?.styleMask.contains(.fullScreen) ?? false)
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
@@ -280,7 +293,7 @@ final class PaneStage: NSView {
     }
 
     override func updateLayer() {
-        layer?.backgroundColor = Palette.NS.ground.cgColor
+        layer?.backgroundColor = seeThrough ? NSColor.clear.cgColor : Palette.NS.ground.cgColor
     }
 
     // MARK: - what is shown
@@ -389,7 +402,7 @@ final class PaneStage: NSView {
         effectiveAppearance.performAsCurrentDrawingAppearance {
             let edge = NSColor.labelColor.withAlphaComponent(CardEdge.edge).cgColor
             let ground = Palette.NS.ground.cgColor
-            layer?.backgroundColor = card ? NSColor.clear.cgColor : ground
+            layer?.backgroundColor = card || seeThrough ? NSColor.clear.cgColor : ground
             let hairline = 1 / max(1, window?.backingScaleFactor ?? 2)
             for slot in slots {
                 slot.layer?.borderWidth = card ? hairline : 0
@@ -399,7 +412,7 @@ final class PaneStage: NSView {
             let corners: CACornerMask = squareTop ? [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
                 : [.layerMinXMinYCorner, .layerMaxXMinYCorner, .layerMinXMaxYCorner, .layerMaxXMaxYCorner]
             for shadow in shadows {
-                shadow.isHidden = !card
+                shadow.isHidden = !card || seeThrough
                 shadow.backgroundColor = ground
                 shadow.cornerRadius = corner
                 shadow.cornerCurve = .continuous
@@ -503,7 +516,9 @@ final class PaneStage: NSView {
                 // Pages run the stage's full height, so its flip is no matter.
                 let shadow = shadows[index]
                 shadow.frame = frame
-                shadow.isHidden = corner == 0 || !visible
+                // None see-through: it is filled with the ground, and would
+                // stand opaque behind the page (see paint).
+                shadow.isHidden = corner == 0 || !visible || seeThrough
             }
             // No line round the page the keys go to: as a card or edge to
             // edge, it read as a stray frame on one page of two (Drice,
@@ -669,7 +684,9 @@ final class PaneStage: NSView {
             for (index, slot) in slots.enumerated() {
                 let web = index < tabs.count ? page(tabs[index]) as? WKWebView : nil
                 slot.layer?.backgroundColor = web?.underPageBackgroundColor.cgColor
-                if let web, !unbacked.contains(web), Self.drawsBackground(web, false) { unbacked.add(web) }
+                // A see-through page draws none already, and keeps it so
+                // (see Transparency.swift).
+                if let web, !unbacked.contains(web), !Transparency.isClear(web), Self.drawsBackground(web, false) { unbacked.add(web) }
             }
         }
         rebacking?.cancel()
@@ -682,7 +699,7 @@ final class PaneStage: NSView {
     private func unbackPages() {
         rebacking?.cancel()
         rebacking = nil
-        for web in unbacked.allObjects { _ = Self.drawsBackground(web, true) }
+        for web in unbacked.allObjects where !Transparency.isClear(web) { _ = Self.drawsBackground(web, true) }
         unbacked.removeAllObjects()
         for slot in slots { slot.layer?.backgroundColor = nil }
     }

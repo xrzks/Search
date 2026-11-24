@@ -369,7 +369,36 @@ final class Preferences: ObservableObject {
     /// the window shows through, blurred (see Glass.swift). Off unless
     /// turned on.
     @Published var glass: Bool {
-        didSet { store.set(glass, forKey: "window.glass") }
+        didSet {
+            store.set(glass, forKey: "window.glass")
+            if glass, transparent { transparent = false }
+        }
+    }
+    /// The whole window see-through, as a terminal with background-opacity
+    /// (see Transparency.swift): the window's own colour at `opacity` over
+    /// what is behind it, and the pages' own grounds taken off. Glass or
+    /// this, not both. Off unless turned on.
+    @Published var transparent: Bool {
+        didSet {
+            store.set(transparent, forKey: "window.transparent")
+            if transparent, glass { glass = false }
+            Dusk.shared.on = dusks
+        }
+    }
+    /// How much of the window's colour lies over what is behind it, from
+    /// Transparency.leastOpacity to one: a terminal's background-opacity.
+    @Published var opacity: Double {
+        didSet { store.set(opacity, forKey: "window.transparent.opacity") }
+    }
+    /// What is behind the window blurred, as a terminal's background-blur.
+    @Published var blurs: Bool {
+        didSet { store.set(blurs, forKey: "window.transparent.blur") }
+    }
+    /// The sites whose pages keep their ground, as typed sites
+    /// ("github.com"), in the order added: chosen on the site's card, or in
+    /// Settings under Transparency.
+    @Published var opaqueSites: [String] {
+        didSet { store.set(opaqueSites, forKey: Transparency.opaqueKey) }
     }
     /// How much grain lies over it, nought to one (GlassGround.mostGrain).
     @Published var glassGrain: Double {
@@ -831,9 +860,13 @@ final class Preferences: ObservableObject {
     @Published var darkensPages: Bool {
         didSet {
             store.set(darkensPages, forKey: "pages.dusk")
-            Dusk.shared.on = darkensPages
+            Dusk.shared.on = dusks
         }
     }
+    /// Whether light pages are darkened while the frame is dark: asked for,
+    /// or a see-through window, where a light page's dark writing would be
+    /// lost on a dark window.
+    var dusks: Bool { darkensPages || transparent }
 
     /// Capture… in the View menu (see Snap.swift). On unless turned off.
     @Published var capturesPages: Bool {
@@ -1481,6 +1514,10 @@ final class Preferences: ObservableObject {
         addressWidth = store.string(forKey: "address.width").flatMap(AddressWidth.init) ?? .small
         addressPlace = store.string(forKey: "address.place").flatMap(AddressPlace.init) ?? .side
         glass = store.bool(forKey: "window.glass")
+        transparent = store.bool(forKey: "window.transparent")
+        opacity = Transparency.opacity(store.object(forKey: "window.transparent.opacity") as? Double) ?? Transparency.defaultOpacity
+        blurs = store.object(forKey: "window.transparent.blur") as? Bool ?? true
+        opaqueSites = (store.array(forKey: Transparency.opaqueKey) as? [String] ?? []).compactMap(SpaceRoutes.site)
         glassGrain = (store.object(forKey: "window.glass.grain") as? Double).map { min(1, max(0, $0)) } ?? 0.2
         glassClear = (store.object(forKey: "window.glass.clear") as? Double).map { min(1, max(0, $0)) } ?? 0.5
         glassStyle = store.string(forKey: "window.glass.style").flatMap(GlassStyle.init) ?? .frosted
@@ -1698,7 +1735,7 @@ final class Preferences: ObservableObject {
         HoveredLink.on = links
         let dusk = store.bool(forKey: "pages.dusk")
         darkensPages = dusk
-        Dusk.shared.on = dusk
+        Dusk.shared.on = dusk || store.bool(forKey: "window.transparent")
         // Always on, with no switch since 27 Nov 2026 (see Retired).
         capturesPages = Retired.on("pages.capture", store)
         copiesCapturesOnly = store.bool(forKey: "pages.capture.copyOnly")
@@ -1834,6 +1871,10 @@ final class Preferences: ObservableObject {
         take(\.addressWidth, "address.width", store.string(forKey: "address.width").flatMap(AddressWidth.init), or: .small)
         take(\.addressPlace, "address.place", store.string(forKey: "address.place").flatMap(AddressPlace.init), or: .side)
         take(\.glass, store.bool(forKey: "window.glass"))
+        take(\.transparent, store.bool(forKey: "window.transparent"))
+        take(\.opacity, "window.transparent.opacity", Transparency.opacity(store.object(forKey: "window.transparent.opacity") as? Double), or: Transparency.defaultOpacity)
+        take(\.blurs, "window.transparent.blur", store.object(forKey: "window.transparent.blur") as? Bool, or: true)
+        take(\.opaqueSites, Transparency.opaqueKey, (store.array(forKey: Transparency.opaqueKey) as? [String])?.compactMap(SpaceRoutes.site), or: [])
         take(\.glassGrain, "window.glass.grain", (store.object(forKey: "window.glass.grain") as? Double).map { min(1, max(0, $0)) }, or: 0.2)
         take(\.glassClear, "window.glass.clear", (store.object(forKey: "window.glass.clear") as? Double).map { min(1, max(0, $0)) }, or: 0.5)
         take(\.glassStyle, "window.glass.style", store.string(forKey: "window.glass.style").flatMap(GlassStyle.init), or: .frosted)

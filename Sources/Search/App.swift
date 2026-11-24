@@ -240,7 +240,7 @@ struct SearchApp: App {
                     }
                 }
                 // Dark pages, only once they are on (Settings › Appearance).
-                if browser.prefs.darkensPages {
+                if browser.prefs.dusks {
                     Divider()
                     Toggle("Darken This Site", isOn: Binding(
                         get: { browser.active?.dusked ?? false },
@@ -657,6 +657,8 @@ struct ContentView: View {
             // column sit on (see CardEdge).
             if fullscreenTab != nil {
                 Color.black
+            } else if browser.glassy, browser.prefs.transparent {
+                TransparentGround(prefs: browser.prefs, look: browser.wash)
             } else if browser.glassy {
                 GlassGround(prefs: browser.prefs, look: browser.wash)
             } else {
@@ -715,7 +717,7 @@ struct ContentView: View {
                                                      height: chrome.height - roomed.height),
                                       scale: displayScale))
                 .modifier(CardEdge(on: cards && !browser.prefs.splitView, insets: cardInsets,
-                                   corner: cardCorner, scale: displayScale))
+                                   corner: cardCorner, scale: displayScale, clear: browser.seeThrough))
                 // The page's own view cut to the card, on the same frames.
                 .modifier(CardClip(card: cardInsets, corner: cardCorner, scale: displayScale,
                                    on: cards, squareTop: rowsInCard))
@@ -863,7 +865,7 @@ struct ContentView: View {
             HomeBackground(theme: browser.prefs.homeTheme, tuning: browser.prefs.homeTuning,
                            image: browser.prefs.homeThemeImage)
                 .clipShape(Metrics.cardOutline(cardCorner, squareTop: rowsInCard))
-        } else {
+        } else if !browser.seeThrough {
             Palette.ground
         }
     }
@@ -1282,6 +1284,8 @@ struct ContentView: View {
                 browser.paintGround(window)
             }
             .onChange(of: browser.glassy) { _, _ in browser.paintGround(window) }
+            .onChange(of: browser.prefs.transparent) { _, _ in browser.paintGround(window) }
+            .onChange(of: browser.prefs.blurs) { _, _ in browser.paintGround(window) }
             // The lights sit on the strip's middle, which moves with its height.
             .onChange(of: browser.prefs.compactStrip) { _, _ in
                 DispatchQueue.main.async { Lights.refresh(window); measureLights() }
@@ -2184,7 +2188,7 @@ struct ContentView: View {
                 if command.section == .profiles, !Profiles.shared.several { return false }
                 if Command.split.contains(command.id), !browser.prefs.splitView { return false }
                 if Command.ai.contains(command.id), !browser.prefs.ai { return false }
-                if Command.dusk.contains(command.id), !browser.prefs.darkensPages { return false }
+                if Command.dusk.contains(command.id), !browser.prefs.dusks { return false }
                 if Command.archive.contains(command.id), browser.prefs.tabLife == .never { return false }
                 if Command.capture.contains(command.id), !browser.prefs.capturesPages { return false }
                 if Command.styles.contains(command.id), !browser.prefs.sitesStyles { return false }
@@ -2228,7 +2232,7 @@ struct ContentView: View {
         // ⌥⇧⌘D, dark pages paused (see Dusk.swift), here rather than left to
         // the View menu: its line only exists while dark pages are on, and a
         // menu line that appears after launch doesn't take its key.
-        if flags.contains(.option), shifted, !flags.contains(.control), browser.prefs.darkensPages,
+        if flags.contains(.option), shifted, !flags.contains(.control), browser.prefs.dusks,
            event.characters(byApplyingModifiers: [])?.lowercased() == "d" {
             browser.pauseDusk()
             return true
@@ -2291,7 +2295,7 @@ struct ContentView: View {
         // Dark pages, the site you're on (see Dusk.swift). Off, the key is
         // the page's.
         case "d" where shifted:
-            guard browser.prefs.darkensPages else { return false }
+            guard browser.prefs.dusks else { return false }
             browser.toggleDusk()
         case "n" where shifted:
             browser.newShyTab()

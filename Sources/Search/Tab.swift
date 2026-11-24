@@ -1411,9 +1411,18 @@ final class Tab: ObservableObject, Identifiable, HandsKeysBack {
         // (see Dusk.swift). Before the document, so a site known to be light
         // is never seen white. Every frame: a frame darkens its own document,
         // led by its page.
-        if let dusk = Dusk.shared.script(for: Dusk.host(of: url ?? pageAddress)) {
+        // A see-through page is measured from inside, as the picture from
+        // outside sees through it (see Transparency.swift).
+        let through = Transparency.clears(url ?? pageAddress)
+        if let dusk = Dusk.shared.script(for: Dusk.host(of: url ?? pageAddress), inside: through) {
             add(dusk, .atDocumentStart, mainFrameOnly: false, in: Web.world)
         }
+        // See-through pages: their ground off before the page has drawn,
+        // and the view's own with it (see Transparency.swift).
+        if let seeThrough = Transparency.script(for: url ?? pageAddress) {
+            add(seeThrough, .atDocumentStart, mainFrameOnly: true, in: Web.world)
+        }
+        if let web = built { Transparency.ground(web, clear: through) }
         // YouTube's ads, while Shield is on for the site this tab is on
         // (see YouTubeAds.swift). Every frame; each script does nothing in a
         // frame that isn't YouTube's.

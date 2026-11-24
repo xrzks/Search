@@ -141,7 +141,7 @@ struct InternalPageView: View {
             // and over the tabs column, seen through with Glass on (idea
             // 833). Held to the pane, from its leading edge, and cut there.
             .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity, alignment: .topLeading)
-            .background(Palette.ground)
+            .background(browser.seeThrough ? Color.clear : Palette.ground)
             .clipShape(Metrics.cardOutline(corner, squareTop: squareTop))
             // In a pair, a click on this page makes it the one with the keys,
             // as a click on a web page does (see PageView.onKeys).

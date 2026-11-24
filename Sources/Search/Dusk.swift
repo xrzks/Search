@@ -109,8 +109,13 @@ final class Dusk: ObservableObject {
 
     /// For each new document on `host`, or nil. `light`: what the page up
     /// now was just seen to be, for a private tab, which keeps nothing.
-    func script(for host: String?, light: Bool = false) -> String? {
-        guard let host, wanted(host) || light && active && Dusk.frameIsDark && sites[host] != false else { return nil }
+    /// `inside`: a see-through page, which can't be measured from outside
+    /// (see Transparency.swift), so it gets the script to measure itself
+    /// with, and darkens only once it has found itself light.
+    func script(for host: String?, light: Bool = false, inside: Bool = false) -> String? {
+        guard let host else { return nil }
+        let unsure = inside && active && Dusk.frameIsDark && sites[host] != false
+        guard wanted(host) || light && active && Dusk.frameIsDark && sites[host] != false || unsure else { return nil }
         return Dusk.page(config(for: host, light: light))
     }
 
@@ -380,6 +385,13 @@ final class Dusk: ObservableObject {
       // changes in, and most pages have a ground of their own under every
       // point.
       var measure = function () {
+        // A see-through page is measured with its own ground back (see
+        // Transparency.swift).
+        var through = window.__searchSeeThrough;
+        if (through) return through.aside(measureUnder);
+        measureUnder();
+      };
+      var measureUnder = function () {
         // The colours change every colour on the page: read with them set
         // aside, always.
         if (paint && paint.showing()) return paint.aside(measureOwn);
@@ -757,7 +769,8 @@ final class DuskRelay: NSObject, WKScriptMessageHandler {
                     DuskRelay.tell(frame, on, in: web) { gone in if gone { tab.duskFrames.removeAll { $0 === frame } } }
                 }
             }
-            web.underPageBackgroundColor = on ? Dusk.underPage : nil
+            // A see-through page has nothing under it (see Transparency.swift).
+            if !Transparency.isClear(web) { web.underPageBackgroundColor = on ? Dusk.underPage : nil }
         }
     }
 

@@ -23,6 +23,31 @@ to [Changes](#changes-from-upstream) with the files it touches once it lands.
 
 Newest first. Each entry: what changed, why, and the files it touches.
 
+**Transparency** (2026-11-24). Settings › Appearance › Window › Transparency:
+the whole window see-through, pages too, as a terminal with
+`background-opacity = 0.8` and `background-blur = true`. The window is clear,
+the window server blurs what is behind it (`CGSSetWindowBackgroundBlurRadius`,
+private, looked up at run time, as Ghostty does), and over that lies the
+window's own colour at Opacity (0.3 to 1, 0.8 to start), with the space's wash
+on it. No material, so none of its tint: the colour over the blur is the colour
+you see. Glass or this, not both; Glass is upstream's, untouched. A page loses
+WebKit's background behind it, its root's and body's colour, and the colour of
+its boxes, each weighed against the colour it lies on (on a page with a bare root and body, the box behind the window's middle): in that colour or a
+shade of it (or half the window each way) cleared, as the page builds itself, in the frame before it is
+drawn; a fixed or sticky bar across the window blurs what scrolls under it (a rail down the side doesn't), and a
+one-colour fade into the ground goes with the ground. Buttons, fields, menus, dialogs, pictures, anything else
+fixed or absolute but for a strip (a page laid out so, as claude.ai's column and side bar), and frames keep theirs. With Search dark, light pages are darkened
+whatever Darken pages says; Dusk measures a see-through page from inside, with
+its ground back, as the picture from outside sees through it. A site is kept
+opaque from its card (See-Through Page) or a list under Transparency, by
+registrable domain as Forget keeps sign-ins. `Transparency.swift` (new),
+`Glass.swift` (`glassy`, `paintGround`), `Prefs.swift` (`transparent`,
+`opacity`, `blurs`, `opaqueSites`, `dusks`), `Tab.swift` (`arm`), `Dusk.swift`
+(`script`, `measure`, `DuskRelay`), `Browser.swift` (`duskLook`,
+`reseeThrough`), `PaneStage.swift`, `SiteCard.swift` (`seeThrough`),
+`Settings.swift`, `SettingsIndex.swift`, `SpaceGradient.swift`, `App.swift`,
+`AddressCommands.swift`
+
 **No iPhone beta prompts** (2026-11-23). Upstream 1.0.19 asks for an email for
 its iPhone beta in Help › Search for iPhone…, under the About window's version,
 and on a blank tab for three days; one press sends the address to upstream's

@@ -161,7 +161,7 @@ enum AddressCommand: Equatable {
             if id != "tabs.split", browser.activeSplit == nil { return false }
         }
         if Command.ai.contains(id), !prefs.ai { return false }
-        if Command.dusk.contains(id), !prefs.darkensPages { return false }
+        if Command.dusk.contains(id), !prefs.dusks { return false }
         if Command.archive.contains(id), prefs.tabLife == .never { return false }
         if Command.capture.contains(id), !prefs.capturesPages { return false }
         if Command.styles.contains(id), !prefs.sitesStyles || browser.active?.shy == true { return false }

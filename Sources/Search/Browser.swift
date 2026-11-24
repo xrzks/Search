@@ -3750,6 +3750,18 @@ final class Browser: NSObject, ObservableObject {
             .sink { [weak self] host in self?.restyle(host) }
             .store(in: &bag)
 
+        // See-through pages (see Transparency.swift), turned on or off, or a
+        // site kept opaque: every tab's next page, and the page each is
+        // showing now.
+        prefs.$transparent.map { _ in () }
+            .merge(with: prefs.$opaqueSites.map { _ in () })
+            .dropFirst(2)
+            .sink { [weak self] in
+                // Published before it is set; the pages read the set one.
+                DispatchQueue.main.async { self?.reseeThrough() }
+            }
+            .store(in: &bag)
+
         // Dark pages (see Dusk.swift), turned on or off, paused, or switched
         // for a site: every tab's next page, and the page each is showing now.
         Dusk.shared.$revision
@@ -9022,7 +9034,7 @@ final class Browser: NSObject, ObservableObject {
     /// The same for a given tab: the site card's, which in Split View can be
     /// the page beside the one with the keys.
     func canDusk(_ tab: Tab?) -> Bool {
-        prefs.darkensPages && !Dusk.shared.paused && Dusk.frameIsDark
+        prefs.dusks && !Dusk.shared.paused && Dusk.frameIsDark
             && Dusk.host(of: tab?.pageAddress) != nil
     }
 
@@ -9045,7 +9057,7 @@ final class Browser: NSObject, ObservableObject {
     /// ⌥⇧⌘D: every page as its site made it, until pressed again or Search
     /// quits. For showing someone a site the way they see it.
     func pauseDusk() {
-        guard prefs.darkensPages else { return }
+        guard prefs.dusks else { return }
         Dusk.shared.pause(!Dusk.shared.paused)
         announce(Dusk.shared.paused ? "Pages as their sites made them, until ⌥⇧⌘D" : "Light pages darkened again")
     }
@@ -9069,6 +9081,12 @@ final class Browser: NSObject, ObservableObject {
     func duskLook(_ tab: Tab) {
         guard let web = tab.built, let url = web.url, let host = Dusk.host(of: url),
               Dusk.shared.unsure(host), !tab.dusked else { return }
+        // A see-through page shows what is behind the window, and measures
+        // itself instead (see Transparency.swift).
+        if Transparency.clears(url) {
+            if let script = Dusk.shared.script(for: host, inside: true) { web.evaluateInSearch(script) }
+            return
+        }
         Dusk.look(at: web) { [weak self, weak tab] dark in
             MainActor.assumeIsolated {
                 guard let self, let tab, let dark, tab.built === web, web.url == url, Dusk.shared.unsure(host) else { return }

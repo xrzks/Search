@@ -650,9 +650,11 @@ struct SpaceLookPicker: View {
         let shape = RoundedRectangle(cornerRadius: 12, style: .continuous)
         let none = choice == .none
         return ZStack(alignment: .bottomLeading) {
-            shape.fill(browser.glassy || browser.asCards ? Palette.frame : Palette.ground)
+            // See-through, the window's own colour (see TransparentGround).
+            shape.fill(browser.prefs.transparent ? Palette.ground
+                       : browser.glassy || browser.asCards ? Palette.frame : Palette.ground)
             if !none {
-                if browser.glassy {
+                if browser.glassy, !browser.prefs.transparent {
                     PickerGlassTint(look: space.look, clear: browser.prefs.glassClear)
                         .clipShape(shape)
                 } else {
@@ -776,7 +778,7 @@ struct SpaceLookPicker: View {
             .padding(2)
             .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Palette.hover))
             // On glass the glass's own Grain, above, is the grain there is.
-            if !browser.glassy {
+            if !browser.glassy || browser.prefs.transparent {
                 HStack {
                     Text("Grain").font(.system(size: 12)).foregroundStyle(Palette.ink)
                     Spacer()

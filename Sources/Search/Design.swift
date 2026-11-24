@@ -661,6 +661,9 @@ struct CardEdge: ViewModifier {
     /// the white of the page meets the window's grey on a sharp line. Zero
     /// keeps the soft card other cards are (the side panel, downloads).
     var scale: CGFloat = 0
+    /// See-through (see Transparency.swift): no ground behind the card, and
+    /// so no shadow, which would be cast through the page.
+    var clear = false
 
     // One shape of view, on or off: a page whose view were rebuilt as the
     // card comes and goes (the tabs across the top, a video taking the
@@ -674,11 +677,11 @@ struct CardEdge: ViewModifier {
             .clipShape(shape)
             .background {
                 if crisp {
-                    shape.fill(on ? Palette.ground : .clear)
+                    shape.fill(on && !clear ? Palette.ground : .clear)
                 } else {
                     shape
-                        .fill(on ? Palette.ground : .clear)
-                        .shadow(color: .black.opacity(on ? CardEdge.shadow : 0), radius: 6, y: 1)
+                        .fill(on && !clear ? Palette.ground : .clear)
+                        .shadow(color: .black.opacity(on && !clear ? CardEdge.shadow : 0), radius: 6, y: 1)
                 }
             }
             .overlay {

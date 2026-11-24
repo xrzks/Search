@@ -291,6 +291,17 @@ enum SettingsIndex {
         .init(id: "window.glass.grain", group: "window", icon: "circle.dotted",
               title: "Grain", detail: "A still noise over the glass",
               keys: ["window.glass.grain"], words: ["grain", "noise", "texture", "glass"], parent: "window.glass", advanced: true),
+        .init(id: "window.transparent", group: "window", icon: "rectangle.dashed",
+              title: "Transparency", detail: "The whole window see-through, pages too, as a terminal with a background opacity",
+              more: "The window's own colour over what is behind it, blurred. A page's root and its large panels lose their colour; buttons, fields, menus and pictures keep theirs. With Search dark, light pages are darkened. A site that looks wrong keeps its background from its card: click the tab you're on. Glass or this, not both. Not in full screen.",
+              keys: ["window.transparent", "window.transparent.opaque"],
+              words: ["transparent", "see through", "pages", "background", "opacity", "terminal", "ghostty", "blur", "translucent"]),
+        .init(id: "window.transparent.opacity", group: "window", icon: "circle.lefthalf.filled",
+              title: "Opacity", detail: "How much of the window's colour lies over what is behind it",
+              keys: ["window.transparent.opacity"], words: ["opacity", "background-opacity", "transparency", "alpha"], parent: "window.transparent"),
+        .init(id: "window.transparent.blur", group: "window", icon: "aqi.medium",
+              title: "Blur", detail: "What is behind the window blurred",
+              keys: ["window.transparent.blur"], words: ["blur", "background-blur", "frosted"], parent: "window.transparent"),
         .init(id: "tabs.liquid", group: "tablook", icon: "drop.halffull",
               title: "Liquid Glass tab", detail: "The tab you're on under a pane of Liquid Glass that glides, stretches and settles",
               more: "It bends the tabs it passes over. Pinned tabs and split pages keep their grey. Under Reduce Motion it goes straight to the tab you pick.",
@@ -972,8 +983,6 @@ enum SettingsIndex {
             return lines.contains { applies($0, prefs) }
         }
         switch item.id {
-        // Shown while on whatever the look, so it can always be turned off.
-        case "pages.dusk": return prefs.look != .light || prefs.darkensPages
         case "inspector.dark": return prefs.look != .dark
         case "sidebar.roomy", "sidebar.player", "sidebar.doorsUp", "sidebar.foldButton", "sidebar.narrowIcons": return prefs.sidebar && !prefs.sideIcons
         case "sidebar.hides", "sidebar.slides", "layout.cards", "pins.list": return prefs.sidebar
@@ -987,6 +996,9 @@ enum SettingsIndex {
         case "window.glass.style": return prefs.glass && GlassStyle.liquidAvailable
         // With spaces on they are in the space's Colour…, beside its colour.
         case "window.glass.clear", "window.glass.grain": return prefs.glass && !prefs.usesSpaces
+        case "window.transparent.opacity", "window.transparent.blur": return prefs.transparent
+        // See-through pages are darkened while Search is dark, whatever it says.
+        case "pages.dusk": return prefs.look != .light && !prefs.transparent
         case "pins.folders": return prefs.sidebar && prefs.listsPins
         case "pins.folderPeek": return prefs.sidebar && prefs.listsPins && prefs.pinFolders
         case "sidebar.foldIcons": return prefs.sidebar && !prefs.sideHides
@@ -1011,8 +1023,9 @@ enum SettingsIndex {
     }
 
     /// What a dimmed dependent row says instead of its own line.
-    static func needs(_ item: SettingsItem) -> String {
+    @MainActor static func needs(_ item: SettingsItem) -> String {
         switch item.id {
+        case "pages.dusk" where Shared.prefs.transparent: return "Always, while the window is see-through"
         case "pages.dusk": return "Only while Search isn't set to Light"
         case "inspector.dark": return "Only while Search isn't set to Dark"
         case "toolbar.left", "tabs.compact", "address.width", "window.top": return "Only with the tabs across the top"
@@ -1022,6 +1035,7 @@ enum SettingsIndex {
         case "tabs.liquid": return LiquidTab.available ? "Only with titles in the column, or the tabs across the top" : "Liquid Glass needs macOS 26"
         case "window.glass.style": return GlassStyle.liquidAvailable ? "Only with Glass on" : "Liquid Glass needs macOS 26"
         case "window.glass.clear", "window.glass.grain": return "With spaces on, in the space's menu › Colour…"
+        case "window.transparent.opacity", "window.transparent.blur": return "Only with Transparency on"
         case "sidebar.foldIcons": return "Only with the column down a side and not hidden until the edge"
         case "icloud.erase": return "Only while Sync with iCloud is on"
         case "tabs.clickKeepsName": return "Only with the address bar always shown, titles in the column or tabs across the top, and Double click to rename off"

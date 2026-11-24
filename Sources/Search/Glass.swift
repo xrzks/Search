@@ -27,7 +27,9 @@ import SwiftUI
 
 extension Browser {
     /// Whether this window is glass right now.
-    var glassy: Bool { prefs.glass && !fullScreen }
+    /// See-through counts (see Transparency.swift): the views leave out
+    /// their ground for it as for glass.
+    var glassy: Bool { (prefs.glass || prefs.transparent) && !fullScreen }
 
     /// Whether the column lies on the glass, and so leaves out a ground of
     /// its own: not while it is folded, when it is out over the page
@@ -72,6 +74,7 @@ extension Browser {
             window.isOpaque = true
             window.backgroundColor = asCards ? Palette.NS.frame : Palette.NS.ground
         }
+        Transparency.blur(window, glassy && prefs.transparent && prefs.blurs)
     }
 }
 
