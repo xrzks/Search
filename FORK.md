@@ -23,6 +23,15 @@ to [Changes](#changes-from-upstream) with the files it touches once it lands.
 
 Newest first. Each entry: what changed, why, and the files it touches.
 
+**The field from any app over a hidden Search** (2026-11-25). With Search
+hidden (⌘H, or a tool that hides the apps behind a maximised window), the key
+brought the field up and every browser window with it: a window that can hide
+unhides its app when it comes on screen. The panel no longer hides with the
+app (`canHide = false`), so it comes up alone over the app in front and Search
+stays hidden; Return still brings Search forward. The panel asking which space
+a link opens in is the same panel and unhides Search itself, as before.
+`Launcher.swift` (`LauncherPanel`)
+
 **Hardcoded settings** (2026-11-25). Settings had grown past what one person
 changes, so most rows are held at one value and gone: from their section and
 from the find field (a group left empty goes too, as upstream draws no empty

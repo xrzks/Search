@@ -526,6 +526,7 @@ final class LauncherPanel: NSPanel {
         level = .modalPanel
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient, .ignoresCycle]
         hidesOnDeactivate = false
+        canHide = false
         isOpaque = false
         backgroundColor = .clear
         // What it holds draws its own.
