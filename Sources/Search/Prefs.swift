@@ -156,13 +156,14 @@ enum Retired {
     nonisolated(unsafe) static var honoured = Store.testing
 
     /// On for everyone. A test world reads the line, on without one.
+    /// Held elsewhere by this fork (Hardcoded.swift), that value wins.
     nonisolated static func on(_ key: String, _ store: UserDefaults = Store.settings) -> Bool {
-        honoured ? store.object(forKey: key) as? Bool ?? true : true
+        honoured ? store.object(forKey: key) as? Bool ?? true : Hardcoded.held(key) ?? true
     }
 
     /// Off for everyone. A test world reads the line, off without one.
     nonisolated static func off(_ key: String, _ store: UserDefaults = Store.settings) -> Bool {
-        honoured ? store.bool(forKey: key) : false
+        honoured ? store.bool(forKey: key) : Hardcoded.held(key) ?? false
     }
 }
 

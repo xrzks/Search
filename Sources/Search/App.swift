@@ -46,6 +46,7 @@ struct SearchApp: App {
         // pages; its own fields aren't sign-in forms. Registered, so kept
         // in memory only: a `defaults write` still wins.
         UserDefaults.standard.register(defaults: ["NSAutoFillHeuristicsEnabled": false])
+        Hardcoded.apply()
         // Settings › General › Start with a fresh window: the files are cut
         // down before any window reads its row from them.
         if Store.settings.bool(forKey: Preferences.freshKey) {

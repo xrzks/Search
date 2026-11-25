@@ -910,6 +910,7 @@ enum SettingsIndex {
     /// Rows for a feature this Mac's WebKit doesn't have aren't listed at
     /// all, on the page or in the find field (see Privacy.swift).
     private static func offered(_ item: SettingsItem) -> Bool {
+        guard Hardcoded.offers(item.id) else { return false }
         switch item.id {
         case "privacy.clickIDs": return ClickIDs.possible
         case "privacy.gpc": return PrivacySignal.possible

@@ -105,17 +105,17 @@ struct SettingsPanel: View {
         /// is Keyboard & Mouse.
         static func named(_ name: String) -> Page? {
             switch name.lowercased() {
-            case "downloads": return .general
+            case "downloads": return Hardcoded.page(.general)
             case "shortcuts", "mouse": return .keyboard
             case "whatsnew", "new": return .whatsNew
-            default: return Page(rawValue: name.lowercased())
+            default: return Page(rawValue: name.lowercased()).map(Hardcoded.page)
             }
         }
         /// The rail's three blocks: the browser, your data and tools, About.
         static var blocks: [[Page]] {
             [[.whatsNew, .general, .appearance, .themes, .tabs, .browsing, .spaces],
              [.passwords, .privacy] + (AI.shipped ? [.ai] : []) + [.extensions, .keyboard],
-             [.about]]
+             [.about]].map { $0.filter(Hardcoded.offers) }
         }
     }
 

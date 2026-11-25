@@ -23,6 +23,19 @@ to [Changes](#changes-from-upstream) with the files it touches once it lands.
 
 Newest first. Each entry: what changed, why, and the files it touches.
 
+**Hardcoded settings** (2026-11-25). Settings had grown past what one person
+changes, so most rows are held at one value and gone: from their section and
+from the find field (a group left empty goes too, as upstream draws no empty
+group), and General and Themes gone from the rail (asked for by name, they
+open Appearance). The values are written at every launch, before Preferences
+reads them, so a menu or a fresh start can't leave one elsewhere for long.
+Where upstream fixes a switch for everyone (`Retired`), the value held here
+wins. Upstream's rows, keys and controls are untouched; one list says what is
+gone, so a merge only meets the lines that ask it, and a row comes back by
+taking it off the list. `Hardcoded.swift` (new; `rows`, `fixed`, `pages`),
+`SettingsIndex.swift` (`offered`), `Settings.swift` (`Page.named`,
+`Page.blocks`), `Prefs.swift` (`Retired`), `App.swift`
+
 **Transparency** (2026-11-24). Settings › Appearance › Window › Transparency:
 the whole window see-through, pages too, as a terminal with
 `background-opacity = 0.8` and `background-blur = true`. The window is clear,
