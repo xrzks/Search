@@ -251,6 +251,9 @@ final class Browser: NSObject, ObservableObject {
     /// What hangs off the button instead of the list: the card for one
     /// bookmark, its name and folder, as ⇧⌘B opens it.
     @Published var bookmarkCard: Bookmark.ID?
+    /// ⇧⌘B with the column folded away: the column sliding out for the
+    /// card, held out by it (see Fold.holding) before the card is open.
+    var bookmarkCardComing = false
 
     /// The page you are on is kept, wherever it is filed.
     /// The keys back to the address field, as a new tab gives them: from
@@ -265,9 +268,12 @@ final class Browser: NSObject, ObservableObject {
 
     /// ⇧⌘B. The page you are on, at the end of the list, and the card off
     /// the button to name it and file it — or the card for it, if it was
-    /// kept already. Without the button on screen (the tabs folded away,
-    /// or the button taken out in Settings › Buttons under the column)
-    /// there is nothing to hang the card from, and a word says what
+    /// kept already. With the tabs folded away, the column slides out
+    /// over the page and the card hangs from its button once it is still,
+    /// so a folder can still be picked; the column goes again as the card
+    /// closes with the pointer elsewhere. Without the button at all (taken
+    /// out in Settings › Buttons under the column, or a page filling the
+    /// screen) there is nothing to hang the card from, and a word says what
     /// happened instead (#1496).
     func bookmarkCurrent() {
         guard let tab = active, let url = tab.address else { return }
@@ -277,13 +283,29 @@ final class Browser: NSObject, ObservableObject {
         // top level every time. One kept before stays where it is.
         let folder = kept == nil ? bookmarks.lastFolder : nil
         if let folder { bookmarks.move(id, into: folder) }
-        guard !folded, !prefs.hidesBookmarksDoor else {
+        guard !prefs.hidesBookmarksDoor, !(folded && frontFillsHere) else {
             let name = folder.flatMap { bookmarks.bookmark($0)?.title }
             announce(kept == nil ? name.map { "Bookmarked in \($0)" } ?? "Bookmarked" : "Already a bookmark")
             return
         }
         bookmarkCard = id
-        bookmarksOpen = true
+        guard folded, !peeking else {
+            bookmarksOpen = true
+            return
+        }
+        // Hung from the button while the column slides, the card would
+        // stand where the button started, off the window's edge.
+        bookmarkCardComing = true
+        peek(true)
+        let still: TimeInterval = Motion.reduced ? 0
+            : Motion.fadesColumn ? Motion.fade
+            : Motion.slide(out: true) ?? 0.2
+        DispatchQueue.main.asyncAfter(deadline: .now() + still + 0.02) { [weak self] in
+            guard let self else { return }
+            self.bookmarkCardComing = false
+            guard self.bookmarkCard == id, !self.folded || self.peeking else { return }
+            self.bookmarksOpen = true
+        }
     }
 
     /// The button: the list, never a card left from before.

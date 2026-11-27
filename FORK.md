@@ -23,6 +23,17 @@ to [Changes](#changes-from-upstream) with the files it touches once it lands.
 
 Newest first. Each entry: what changed, why, and the files it touches.
 
+**The bookmark card with the tabs folded away** (2026-11-27). ⇧⌘B with the
+column (or the strip) folded away kept the page without asking, filed in the
+folder picked last on the card, with only a word to say so: the card hangs
+from the Bookmarks button, and folded there was no button on screen. Now the
+column slides out over the page first and the card opens from its button once
+the column is still, so the name and folder can be changed as with the column
+out; the column is held out until the card closes, and goes again then if the
+pointer is elsewhere. A page filling the screen still only gets the word.
+`Browser.swift` (`bookmarkCurrent`, `bookmarkCardComing`), `Fold.swift`
+(`holding`)
+
 **The field from any app over a hidden Search** (2026-11-25). With Search
 hidden (⌘H, or a tool that hides the apps behind a maximised window), the key
 brought the field up and every browser window with it: a window that can hide

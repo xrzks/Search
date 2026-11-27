@@ -714,9 +714,10 @@ struct Fold: View {
     /// A popover opened from a button in the column, still open: the
     /// bookmarks list or the extensions menu. Folding the column would take
     /// it along, so it holds the column out wherever the pointer has gone,
-    /// on the way to a bookmark over the page included (#88).
+    /// on the way to a bookmark over the page included (#88). Also the
+    /// card ⇧⌘B brought the column out for, before it opens.
     private var holding: Bool {
-        if browser.bookmarksOpen { return true }
+        if browser.bookmarksOpen || browser.bookmarkCardComing { return true }
         if #available(macOS 15.4, *), Extensions.shared.menuOpen { return true }
         return false
     }
